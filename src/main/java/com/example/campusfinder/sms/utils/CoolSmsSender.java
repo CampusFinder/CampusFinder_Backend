@@ -1,5 +1,6 @@
 package com.example.campusfinder.sms.utils;
 
+import com.example.campusfinder.sms.constant.Constant;
 import net.nurigo.sdk.NurigoApp;
 import net.nurigo.sdk.message.model.Message;
 import net.nurigo.sdk.message.request.SingleMessageSendingRequest;
@@ -31,7 +32,7 @@ public class CoolSmsSender implements SmsSender{
             @Value("${spring.coolsms.senderNumber}") String senderNumber
     ){
         this.senderNumber = senderNumber;
-        this.messageService = NurigoApp.INSTANCE.initialize(apiKey, apiSecret, "https://api.coolsms.co.kr");
+        this.messageService = NurigoApp.INSTANCE.initialize(apiKey, apiSecret, Constant.DOMAIN);
     }
 
     @Override
