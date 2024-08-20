@@ -21,9 +21,15 @@ configurations {
 
 repositories {
     mavenCentral()
+    //univcert
+    maven{url 'https://jitpack.io'}
+
 }
 
 dependencies {
+    //univcert
+    implementation 'com.github.in-seo:univcert:master-SNAPSHOT'
+
     //redis 의존성 주입
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
