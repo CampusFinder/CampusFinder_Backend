@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * packageName    : com.example.campusfinder.user.validates
- * fileName       : VerifyPasswordValidator
+ * fileName       : VerifyPhoneNmberValidator
  * author         : tlswl
  * date           : 2024-08-20
  * description    :
@@ -14,12 +14,15 @@ import org.springframework.stereotype.Component;
  * 2024-08-20        tlswl       최초 생성
  */
 @Component
-public class VerifyPasswordValidator implements Validator<String>{
+public class PhoneNumberValidator implements Validator<String>{
 
     @Override
-    public void validate(String password){
-        if(password == null || password.length()<4){
-            throw new IllegalArgumentException("비밀번호는 최소 4자리 이상이어야 합니다.");
+    public void validate(String phoneNumber){
+        if (phoneNumber == null || phoneNumber.isBlank()) {
+            throw new IllegalArgumentException("핸드폰 번호는 빈칸일 수 없습니다.");
+        }
+        if(phoneNumber == null || !phoneNumber.matches("^\\d{10,11}$")){
+            throw new IllegalArgumentException("유효하지 않은 핸드폰 번호입니다.");
         }
     }
 }

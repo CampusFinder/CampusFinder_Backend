@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * 2024-08-20        tlswl       최초 생성
  */
 @Component
-public class VerifyEmailValidator implements Validator<String>{
+public class EmailValidator implements Validator<String>{
 
     @Override
     public void validate(String email){
