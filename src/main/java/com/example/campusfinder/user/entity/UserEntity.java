@@ -1,0 +1,83 @@
+package com.example.campusfinder.user.entity;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+
+/**
+ * packageName    : com.example.campusfinder.user.entity
+ * fileName       : UserEntity
+ * author         : tlswl
+ * date           : 2024-08-19
+ * description    :
+ * ===========================================================
+ * DATE              AUTHOR             NOTE
+ * -----------------------------------------------------------
+ * 2024-08-19        tlswl       최초 생성
+ */
+
+@Entity
+@Table(name="USER")
+@AllArgsConstructor
+@NoArgsConstructor
+@DynamicInsert
+@DynamicUpdate
+@Getter
+@Builder
+public class UserEntity {
+
+    @Id
+    @Column(name="user_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long userSeq;
+
+    //휴대폰 번호
+    @Column(name="phone_number", nullable = false)
+    private String phoneNumber;
+
+    //비밀번호
+    @Column(name="password", nullable = false)
+    private String encodedPassword;
+
+    //교수, 학생 역할
+    @Enumerated(EnumType.STRING)
+    @Column(name="role", nullable = false)
+    private Role role;
+
+    //학교
+    @Column(name="school", nullable = false)
+    private String school;
+
+    //학교 이메일
+    @Column(name="email", nullable = false)
+    private String email;
+
+    @Column(name="nickname", nullable = false)
+    private String nickName;
+
+    @Column(name="email_verified", nullable = false)
+    private boolean emailVerified = false;
+
+    @Column(name="phone_verified", nullable = false)
+    private boolean phoneVerified=false;
+
+    //이메일 인증 성공 시 호출
+    public void verifyEmail(){
+        this.emailVerified=true;
+    }
+
+    public void verifyPhone(){
+        this.phoneVerified=true;
+    }
+
+
+    //비밀번호 찾기 시에 사용하는 update 메서드
+    public UserEntity updatePassword(String encodedPassword){
+        this.encodedPassword=encodedPassword;
+        return this;
+    }
+}
