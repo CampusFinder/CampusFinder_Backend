@@ -77,4 +77,9 @@ final public class BaseResponse<T> {
     public static BaseResponse<Void> ofCustomFail(int customStatus, String message){
         return new BaseResponse<>(customStatus, message, null);
     }
+
+    // 오류 응답을 생성하는 메서드
+    public static <T> BaseResponse<T> ofError(int status, String message) {
+        return new BaseResponse<>(status, message, null);
+    }
 }
