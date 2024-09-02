@@ -2,6 +2,7 @@ package com.example.campusfinder.email.controller;
 
 import com.example.campusfinder.core.base.BaseResponse;
 import com.example.campusfinder.email.dto.EmailRequest;
+import com.example.campusfinder.email.dto.EmailVerifyRequest;
 import com.example.campusfinder.email.service.EmailVerificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,18 +40,18 @@ public class EmailController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<BaseResponse> verifyCode(@RequestParam String email,
-                                                   @RequestParam String univName,
-                                                   @RequestParam int code) throws IOException {
+    public ResponseEntity<BaseResponse> verifyCode(@RequestBody EmailVerifyRequest request) throws IOException {
         try {
-            boolean isVerified = emailVerificationService.verifyCode(email, univName, code);
+            boolean isVerified = emailVerificationService.verifyCode(request.email(), request.univName(), request.code());
             if (isVerified) {
                 return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "이메일 인증에 성공했습니다."));
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(BaseResponse.ofError(HttpStatus.UNAUTHORIZED.value(), "인증 코드가 유효하지 않습니다."));
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(BaseResponse.ofError(HttpStatus.UNAUTHORIZED.value(), "인증 코드가 유효하지 않습니다."));
             }
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BaseResponse.ofError(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(BaseResponse.ofError(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
         }
     }
 
