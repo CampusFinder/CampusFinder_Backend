@@ -13,11 +13,11 @@ package com.example.campusfinder.email.dto;
  */
 
 public record EmailRequest(
-        String universityName,
+        String univName,
         String email
 ) {
     public EmailRequest {
-        if (universityName == null || universityName.isBlank()) {
+        if (univName == null || univName.isBlank()) {
             throw new IllegalArgumentException("대학교 이름은 빈칸일 수 없습니다.");
         }
         if (email == null || !email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
