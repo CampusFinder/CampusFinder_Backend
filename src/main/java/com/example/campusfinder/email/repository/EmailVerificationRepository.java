@@ -20,6 +20,8 @@ import java.util.Set;
 public class EmailVerificationRepository {
 
     private final Set<String> verifiedEmails = new HashSet<>();
+    private final Set<String> registeredEmails = new HashSet<>();  // 회원가입 여부 관리
+
 
     public void saveVerifiedEmail(String email) {
         verifiedEmails.add(email);
@@ -27,5 +29,15 @@ public class EmailVerificationRepository {
 
     public boolean isEmailVerified(String email) {
         return verifiedEmails.contains(email);
+    }
+
+    // 회원가입 여부 확인
+    public boolean isRegistered(String email) {
+        return registeredEmails.contains(email);
+    }
+
+    // 회원가입 완료 시 이메일 등록
+    public void saveRegisteredEmail(String email) {
+        registeredEmails.add(email);
     }
 }
