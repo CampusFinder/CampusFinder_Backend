@@ -25,7 +25,7 @@ public class SmsCertificationRepository {
     private final StringRedisTemplate redisTemplate;
 
     //redis에서 사용할 키 생성
-    //입력이 01031005136이면 반환히 sms:01031005136
+    //입력이 01031005136이면 반환시 sms:01031005136
     private String getRedisKey(String phoneNumber){
         return Constant.PREFIX + phoneNumber;
     }
