@@ -27,9 +27,9 @@ public class CoolSmsSender implements SmsSender{
     private final String senderNumber;
 
     public CoolSmsSender(
-            @Value("${spring.coolsms.apiKey}") String apiKey,
-            @Value("${spring.coolsms.apiSecret}") String apiSecret,
-            @Value("${spring.coolsms.senderNumber}") String senderNumber
+            @Value("${coolsms.apiKey}") String apiKey,
+            @Value("${coolsms.apiSecret}") String apiSecret,
+            @Value("${coolsms.senderNumber}") String senderNumber
     ){
         this.senderNumber = senderNumber;
         this.messageService = NurigoApp.INSTANCE.initialize(apiKey, apiSecret, Constant.DOMAIN);
