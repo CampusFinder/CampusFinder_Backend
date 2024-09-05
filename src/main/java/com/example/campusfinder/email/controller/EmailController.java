@@ -13,7 +13,7 @@ import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/email-verification")
+@RequestMapping("/api/email-certification")
 public class EmailController {
 
     private final EmailVerificationService emailVerificationService;

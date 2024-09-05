@@ -53,15 +53,29 @@ public class EmailVerificationService {
     }
 
     public boolean verifyCode(String email, String univName, int code, Role role) throws IOException {
+        boolean isVerified = false;
+
         if (role == Role.ROLE_STUDENT) {
-            return emailVerificationUtils.verifyStudentCode(email, univName, code);
+            isVerified = emailVerificationUtils.verifyStudentCode(email, univName, code);
         } else if (role == Role.ROLE_PROFESSOR) {
-            return emailVerificationUtils.verifyProfessorCode(email, code);
+            isVerified = emailVerificationUtils.verifyProfessorCode(email, code);
         }
-        return false;
+
+        // 이메일 인증이 성공한 경우, 인증 상태를 저장
+        if (isVerified) {
+            emailVerificationRepository.saveVerifiedEmail(email);  // 인증된 이메일을 저장
+        }
+
+        return isVerified;
     }
 
     public boolean isVerificationPending(String email) {
         return emailVerificationUtils.isVerificationPending(email);
+    }
+
+
+    // 이메일 인증 여부를 체크하는 메서드 추가
+    public boolean isEmailVerified(String email) {
+        return emailVerificationRepository.isEmailVerified(email);
     }
 }
