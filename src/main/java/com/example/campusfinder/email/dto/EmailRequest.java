@@ -1,5 +1,7 @@
 package com.example.campusfinder.email.dto;
 
+import com.example.campusfinder.user.entity.Role;
+
 /**
  * packageName    : com.example.campusfinder.email.dto
  * fileName       : EmailRequest
@@ -13,7 +15,7 @@ package com.example.campusfinder.email.dto;
  */
 
 public record EmailRequest(
-        String role,
+        Role role,
         String univName,
         String email
 ) {
@@ -24,8 +26,8 @@ public record EmailRequest(
         if (email == null || !email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
             throw new IllegalArgumentException("유효하지 않은 이메일 형식입니다.");
         }
-        if (role == null || role.isBlank()) {
-            throw new IllegalArgumentException("역할을 입력해주세요.");
+        if (role == null) {
+            throw new IllegalArgumentException("ROLE을 입력해주세요.");
         }
     }
 }
