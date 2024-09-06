@@ -19,10 +19,10 @@ public class EmailVerificationService {
     public void sendVerificationCode(EmailRequest emailRequest) throws IOException {
         Role role = emailRequest.role();
 
-        if (role == Role.ROLE_STUDENT) {
+        if (role == Role.STUDENT) {
             // 학생 인증 로직
             handleStudentVerification(emailRequest);
-        } else if (role == Role.ROLE_PROFESSOR) {
+        } else if (role == Role.PROFESSOR) {
             // 교수 인증 로직 (임시 구현, 추후 추가 필요)
             handleProfessorVerification(emailRequest);
         }
@@ -55,9 +55,9 @@ public class EmailVerificationService {
     public boolean verifyCode(String email, String univName, int code, Role role) throws IOException {
         boolean isVerified = false;
 
-        if (role == Role.ROLE_STUDENT) {
+        if (role == Role.STUDENT) {
             isVerified = emailVerificationUtils.verifyStudentCode(email, univName, code);
-        } else if (role == Role.ROLE_PROFESSOR) {
+        } else if (role == Role.PROFESSOR) {
             isVerified = emailVerificationUtils.verifyProfessorCode(email, code);
         }
 

@@ -12,6 +12,6 @@ package com.example.campusfinder.user.entity;
  * 2024-08-19        tlswl       최초 생성
  */
 public enum Role {
-    ROLE_STUDENT,
-    ROLE_PROFESSOR
+    STUDENT,
+    PROFESSOR
 }
