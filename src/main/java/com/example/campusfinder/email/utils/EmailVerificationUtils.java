@@ -22,7 +22,7 @@ public class EmailVerificationUtils {
     private final ObjectMapper objectMapper;  // JSON 파싱을 위한 ObjectMapper
     @Value("${univcert.api-key}")
     private String univCertApiKey;
-    private final static long EXPIRATION_TIME = 300L; // 5분
+    private final static long EXPIRATION_TIME = 600L; // 5분
 
     public void sendVerificationCode(EmailRequest emailRequest) throws IOException {
         String redisKey = "email:verification:" + emailRequest.email();

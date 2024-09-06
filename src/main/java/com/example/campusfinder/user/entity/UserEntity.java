@@ -37,27 +37,23 @@ public class UserEntity {
 
     //휴대폰 번호
     @Column(name="phone_number", nullable = false)
-    private String phoneNumber;
+    private String phone;
 
     //비밀번호
     @Column(name="password", nullable = false)
-    private String encodedPassword;
+    private String password;
 
     //교수, 학생 역할
     @Enumerated(EnumType.STRING)
     @Column(name="role", nullable = false)
     private Role role;
 
-    //학교
-    @Column(name="school", nullable = false)
-    private String school;
-
     //학교 이메일
     @Column(name="email", nullable = false)
     private String email;
 
     @Column(name="nickname", nullable = false)
-    private String nickName;
+    private String nickname;
 
     @Column(name="email_verified", nullable = false)
     private boolean emailVerified = false;
@@ -76,8 +72,9 @@ public class UserEntity {
 
 
     //비밀번호 찾기 시에 사용하는 update 메서드
-    public UserEntity updatePassword(String encodedPassword){
-        this.encodedPassword=encodedPassword;
+    // 비밀번호 찾기 시에 사용하는 update 메서드
+    public UserEntity updatePassword(String password) {
+        this.password = password;
         return this;
     }
 }
