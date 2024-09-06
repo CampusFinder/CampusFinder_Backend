@@ -1,6 +1,8 @@
 package com.example.campusfinder.user.dto.request.element;
 
+import com.example.campusfinder.user.dto.deserializer.EmailDtoDeserializer;
 import com.example.campusfinder.user.validates.EmailValidator;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * packageName    : com.example.campusfinder.user.dto.request
@@ -13,10 +15,6 @@ import com.example.campusfinder.user.validates.EmailValidator;
  * -----------------------------------------------------------
  * 2024-08-20        tlswl       최초 생성
  */
+@JsonDeserialize(using = EmailDtoDeserializer.class)
 public record EmailDto(String email) {
-    private static final EmailValidator emailValidator = new EmailValidator();
-
-    public EmailDto{
-        emailValidator.validate(email);
-    }
 }

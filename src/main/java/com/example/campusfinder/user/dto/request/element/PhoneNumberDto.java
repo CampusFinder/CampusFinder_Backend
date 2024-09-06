@@ -1,6 +1,8 @@
 package com.example.campusfinder.user.dto.request.element;
 
+import com.example.campusfinder.user.dto.deserializer.PhoneNumberDtoDeserializer;
 import com.example.campusfinder.user.validates.PhoneNumberValidator;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * packageName    : com.example.campusfinder.user.dto.request
@@ -13,10 +15,6 @@ import com.example.campusfinder.user.validates.PhoneNumberValidator;
  * -----------------------------------------------------------
  * 2024-08-20        tlswl       최초 생성
  */
+@JsonDeserialize(using = PhoneNumberDtoDeserializer.class)
 public record PhoneNumberDto(String phoneNumber) {
-    private static final PhoneNumberValidator phoneNumberValidator=new PhoneNumberValidator();
-
-    public PhoneNumberDto{
-        phoneNumberValidator.validate(phoneNumber);
-    }
 }

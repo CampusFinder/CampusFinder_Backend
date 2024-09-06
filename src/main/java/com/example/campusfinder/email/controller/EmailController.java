@@ -11,20 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
-/**
- * packageName    : com.example.campusfinder.email.controller
- * fileName       : EmailController
- * author         : tlswl
- * date           : 2024-08-20
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2024-08-20        tlswl       최초 생성
- */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/email-verification")
+@RequestMapping("/api/email-certification")
 public class EmailController {
 
     private final EmailVerificationService emailVerificationService;
@@ -42,7 +31,7 @@ public class EmailController {
     @PostMapping("/verify")
     public ResponseEntity<BaseResponse> verifyCode(@RequestBody EmailVerifyRequest request) throws IOException {
         try {
-            boolean isVerified = emailVerificationService.verifyCode(request.email(), request.univName(), request.code());
+            boolean isVerified = emailVerificationService.verifyCode(request.email(), request.univName(), request.code(), request.role());
             if (isVerified) {
                 return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "이메일 인증에 성공했습니다."));
             } else {

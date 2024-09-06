@@ -50,4 +50,18 @@ public class SmsCertificationRepository {
     public boolean hasKey(String phoneNumber){
         return Boolean.TRUE.equals(redisTemplate.hasKey(getRedisKey(phoneNumber)));
     }
+
+    //휴대폰 인증이 완료되었는지 확인하는 메서드
+    public boolean isPhoneVerified(String phoneNumber){
+        String redisKey=Constant.PREFIX + phoneNumber;
+        String value=redisTemplate.opsForValue().get(redisKey);
+        return "VERIFIED".equals(value);
+    }
+
+    //휴대폰 인증 성공 시 호출되는 메서드
+    public void verifyPhone(String phoneNumber){
+        String redisKey=Constant.PREFIX+phoneNumber;
+        redisTemplate.opsForValue().set(redisKey,"VERIFIED");
+    }
+
 }

@@ -1,6 +1,8 @@
 package com.example.campusfinder.user.dto.request.element;
 
+import com.example.campusfinder.user.dto.deserializer.RoleDtoDeserializer;
 import com.example.campusfinder.user.validates.RoleValidator;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * packageName    : com.example.campusfinder.user.dto.request
@@ -13,10 +15,6 @@ import com.example.campusfinder.user.validates.RoleValidator;
  * -----------------------------------------------------------
  * 2024-08-20        tlswl       최초 생성
  */
+@JsonDeserialize(using = RoleDtoDeserializer.class)
 public record RoleDto(String role) {
-    private static final RoleValidator roleValidator=new RoleValidator();
-
-    public RoleDto{
-        roleValidator.validate(role);
-    }
 }
