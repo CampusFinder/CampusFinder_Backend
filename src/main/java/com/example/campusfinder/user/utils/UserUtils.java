@@ -6,7 +6,6 @@ import com.example.campusfinder.user.dto.request.signup.SignUpRequestDto;
 import com.example.campusfinder.user.entity.Role;
 import com.example.campusfinder.user.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 @Component
