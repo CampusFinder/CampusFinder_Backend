@@ -5,6 +5,7 @@ import com.example.campusfinder.user.entity.UserEntity;
 import com.example.campusfinder.user.repository.UserRepository;
 import com.example.campusfinder.user.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserUtils userUtils;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public void signUpUser(SignUpRequestDto signUpRequest) {
@@ -39,7 +41,10 @@ public class UserService {
             throw new IllegalArgumentException("이메일과 sms 인증이 완료되지 않았습니다");
         }
 
-        UserEntity newUser = userUtils.createUserEntity(signUpRequest);
+        //비밀번호 인코딩
+        String encodedPassword = passwordEncoder.encode(signUpRequest.password().password());
+
+        UserEntity newUser = userUtils.createUserEntity(signUpRequest, encodedPassword);
         userRepository.save(newUser);
     }
 }

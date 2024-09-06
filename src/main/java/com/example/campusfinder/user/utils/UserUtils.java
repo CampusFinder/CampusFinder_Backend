@@ -25,11 +25,11 @@ public class UserUtils {
         return smsCertificationRepository.isPhoneVerified(phoneNumber);
     }
 
-    public UserEntity createUserEntity(SignUpRequestDto signUpRequest) {
+    public UserEntity createUserEntity(SignUpRequestDto signUpRequest, String encodedPassword) {
         return UserEntity.builder()
                 .email(signUpRequest.email().email())
                 .phone(signUpRequest.phone().phoneNumber())
-                .password(signUpRequest.password().password())
+                .password(encodedPassword)
                 .nickname(signUpRequest.nickname().nickname())
                 .role(Role.valueOf(signUpRequest.role().role()))
                 .emailVerified(true)
