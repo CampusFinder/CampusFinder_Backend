@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 /**
  * packageName    : com.example.campusfinder.user.controller
  * fileName       : SignInController
@@ -31,7 +33,7 @@ public class SignInController {
 
     @PostMapping
     public ResponseEntity<BaseResponse> singIn(@RequestBody SignInRequestDto signInRequestDto){
-        String accessToken = userService.SignInUser(signInRequestDto);
-        return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(),accessToken));
+        Map<String, String> tokens = userService.signInUser(signInRequestDto);
+        return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(),tokens));
     }
 }

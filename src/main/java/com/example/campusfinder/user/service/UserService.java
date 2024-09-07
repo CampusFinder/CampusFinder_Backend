@@ -11,6 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -51,19 +54,26 @@ public class UserService {
     }
 
     //로그인
-    public String SignInUser(SignInRequestDto signInRequest){
-        UserEntity user= userRepository.findByPhoneNum(signInRequest.phoneNum())
-                .orElseThrow(()->new IllegalArgumentException("존재하지 않는 회원입니다."));
+    public Map<String, String> signInUser(SignInRequestDto signInRequest){
+        UserEntity user = userRepository.findByPhoneNum(signInRequest.phoneNum())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        if(!passwordEncoder.matches(signInRequest.password(), user.getPassword())){
+        if (!passwordEncoder.matches(signInRequest.password(), user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        //토큰 생성
+        // 토큰 생성
         String accessToken = jwtTokenProvider.generateAccessToken(user.getPhoneNum());
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getPhoneNum());
 
-        userUtils.saveRefreshToken(user.getPhoneNum(),refreshToken);
-        return accessToken;
+        // Refresh Token 저장 (Redis 또는 다른 저장소)
+        userUtils.saveRefreshToken(user.getPhoneNum(), refreshToken);
+
+        // Access Token과 Refresh Token 반환
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", accessToken);
+        tokens.put("refreshToken", refreshToken);
+
+        return tokens;
     }
 }
