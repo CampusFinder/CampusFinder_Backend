@@ -1,6 +1,7 @@
 package com.example.campusfinder.user.dto.request.element;
 
-import com.example.campusfinder.user.validates.SchoolValidator;
+import com.example.campusfinder.user.dto.deserializer.RoleDtoDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * packageName    : com.example.campusfinder.user.dto.request
@@ -13,10 +14,5 @@ import com.example.campusfinder.user.validates.SchoolValidator;
  * -----------------------------------------------------------
  * 2024-08-20        tlswl       최초 생성
  */
-public record SchoolDto(String school) {
-    private static final SchoolValidator schoolValidator = new SchoolValidator();
-
-    public SchoolDto{
-        schoolValidator.validate(school);
-    }
-}
+@JsonDeserialize(using = RoleDtoDeserializer.class)
+public record UniversityDto(String univName) { }
