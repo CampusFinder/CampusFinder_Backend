@@ -1,4 +1,4 @@
-package com.example.campusfinder.core.configuration;
+package com.example.campusfinder.core.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
