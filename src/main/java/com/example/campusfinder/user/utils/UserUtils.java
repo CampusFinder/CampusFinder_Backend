@@ -32,10 +32,11 @@ public class UserUtils {
     public UserEntity createUserEntity(SignUpRequestDto signUpRequest, String encodedPassword) {
         return UserEntity.builder()
                 .email(signUpRequest.email().email())
-                .phone(signUpRequest.phone().phoneNumber())
+                .phoneNum(signUpRequest.phoneNum().phoneNumber())
                 .password(encodedPassword)
                 .nickname(signUpRequest.nickname().nickname())
                 .role(Role.valueOf(signUpRequest.role().role()))
+                .univName(signUpRequest.univName().univName())
                 .emailVerified(true)
                 .phoneVerified(true)
                 .build();

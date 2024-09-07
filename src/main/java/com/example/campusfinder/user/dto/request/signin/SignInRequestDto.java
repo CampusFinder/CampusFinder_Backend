@@ -11,10 +11,10 @@ package com.example.campusfinder.user.dto.request.signin;
  * -----------------------------------------------------------
  * 2024-09-07        tlswl       최초 생성
  */
-public record SignInRequestDto(String phone, String password)
+public record SignInRequestDto(String phoneNum, String password)
 {
     public SignInRequestDto{
-        if(phone == null || phone.isBlank()){
+        if(phoneNum == null || phoneNum.isBlank()){
             throw new IllegalArgumentException("전화번호를 필수로 입력해주세요.");
         }
         if(password == null || password.isBlank()){

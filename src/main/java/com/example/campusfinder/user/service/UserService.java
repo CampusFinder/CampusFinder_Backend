@@ -27,7 +27,7 @@ public class UserService {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         }
 
-        if(userRepository.existsByPhone(signUpRequest.phoneNum().phoneNumber())){
+        if(userRepository.existsByPhoneNum(signUpRequest.phoneNum().phoneNumber())){
             throw new IllegalArgumentException("이미 가입된 전화번호 입니다.");
         }
 
@@ -52,7 +52,7 @@ public class UserService {
 
     //로그인
     public String SignInUser(SignInRequestDto signInRequest){
-        UserEntity user= userRepository.findByPhone(signInRequest.phone())
+        UserEntity user= userRepository.findByPhoneNum(signInRequest.phoneNum())
                 .orElseThrow(()->new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         if(!passwordEncoder.matches(signInRequest.password(), user.getPassword())){
