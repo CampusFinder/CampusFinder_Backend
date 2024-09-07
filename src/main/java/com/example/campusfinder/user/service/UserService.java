@@ -1,5 +1,7 @@
 package com.example.campusfinder.user.service;
 
+import com.example.campusfinder.core.security.JwtTokenProvider;
+import com.example.campusfinder.user.dto.request.signin.SignInRequestDto;
 import com.example.campusfinder.user.dto.request.signup.SignUpRequestDto;
 import com.example.campusfinder.user.entity.UserEntity;
 import com.example.campusfinder.user.repository.UserRepository;
@@ -16,6 +18,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserUtils userUtils;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public void signUpUser(SignUpRequestDto signUpRequest) {
@@ -24,14 +27,13 @@ public class UserService {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         }
 
-        if(userRepository.existsByPhone(signUpRequest.phone().phoneNumber())){
+        if(userRepository.existsByPhoneNum(signUpRequest.phoneNum().phoneNumber())){
             throw new IllegalArgumentException("이미 가입된 전화번호 입니다.");
         }
 
-
         // 이메일 인증 여부와 전화번호 인증 여부를 개별적으로 확인
         boolean isEmailVerified = userUtils.isEmailVerified(signUpRequest.email().email());
-        boolean isPhoneVerified = userUtils.isPhoneVerified(signUpRequest.phone().phoneNumber());
+        boolean isPhoneVerified = userUtils.isPhoneVerified(signUpRequest.phoneNum().phoneNumber());
 
         // 인증 여부를 로그로 출력
         System.out.println("이메일 인증 여부: " + isEmailVerified);
@@ -46,5 +48,22 @@ public class UserService {
 
         UserEntity newUser = userUtils.createUserEntity(signUpRequest, encodedPassword);
         userRepository.save(newUser);
+    }
+
+    //로그인
+    public String SignInUser(SignInRequestDto signInRequest){
+        UserEntity user= userRepository.findByPhoneNum(signInRequest.phoneNum())
+                .orElseThrow(()->new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        if(!passwordEncoder.matches(signInRequest.password(), user.getPassword())){
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        //토큰 생성
+        String accessToken = jwtTokenProvider.generateAccessToken(user.getPhoneNum());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getPhoneNum());
+
+        userUtils.saveRefreshToken(user.getPhoneNum(),refreshToken);
+        return accessToken;
     }
 }

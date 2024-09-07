@@ -1,9 +1,10 @@
 package com.example.campusfinder.user.repository;
 
 import com.example.campusfinder.user.entity.UserEntity;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 /**
  * packageName    : com.example.campusfinder.user
@@ -19,5 +20,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity,Long> {
     boolean existsByEmail(String email);
-    boolean existsByPhone(String phone);
+    boolean existsByPhoneNum(String phoneNum);
+    Optional<UserEntity> findByPhoneNum(String phoneNum);
 }

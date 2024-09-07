@@ -12,14 +12,12 @@ import java.util.Map;
 
 import static com.univcert.api.UnivCert.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 @RequiredArgsConstructor
 public class EmailVerificationUtils {
 
     private final StringRedisTemplate redisTemplate;
-    private final ObjectMapper objectMapper;  // JSON 파싱을 위한 ObjectMapper
     @Value("${univcert.api-key}")
     private String univCertApiKey;
     private final static long EXPIRATION_TIME = 600L; // 5분

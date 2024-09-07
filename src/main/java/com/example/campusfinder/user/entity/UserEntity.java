@@ -37,7 +37,7 @@ public class UserEntity {
 
     //휴대폰 번호
     @Column(name="phone_number", nullable = false)
-    private String phone;
+    private String phoneNum;
 
     //비밀번호
     @Column(name="password", nullable = false)
@@ -54,6 +54,9 @@ public class UserEntity {
 
     @Column(name="nickname", nullable = false)
     private String nickname;
+
+    @Column(name="univName", nullable = false)
+    private String univName;
 
     @Column(name="email_verified", nullable = false)
     private boolean emailVerified = false;

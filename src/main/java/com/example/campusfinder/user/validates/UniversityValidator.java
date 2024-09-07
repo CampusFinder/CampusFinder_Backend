@@ -14,10 +14,10 @@ import org.springframework.stereotype.Component;
  * 2024-08-20        tlswl       최초 생성
  */
 @Component
-public class SchoolValidator implements Validator<String>{
+public class UniversityValidator implements Validator<String>{
     @Override
-    public void validate(String school) {
-        if (school == null || school.isBlank()) {
+    public void validate(String univName) {
+        if (univName == null || univName.isBlank()) {
             throw new IllegalArgumentException("유효하지 않은 학교 이름입니다.");
         }
     }
