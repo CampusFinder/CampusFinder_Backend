@@ -65,6 +65,6 @@ public class SmsService {
     private boolean isValidCertification(SmsRequest request) {
         return smsCertificationRepository.hasKey(request.phoneNumber()) &&
                 smsCertificationRepository.getSmsCertification(request.phoneNumber())
-                        .equals(request.certificationNumber());
+                        .equals(request.code());
     }
 }

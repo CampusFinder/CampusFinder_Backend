@@ -16,9 +16,10 @@ import com.example.campusfinder.user.dto.request.element.*;
 public record SignUpRequestDto(
         RoleDto role,
         EmailDto email,
-        PhoneNumberDto phone,
+        PhoneNumberDto phoneNum,
         PasswordDto password,
-        NicknameDto nickname
+        NicknameDto nickname,
+        UniversityDto univName
 ) {
     public SignUpRequestDto {
         if (role == null) {
@@ -27,7 +28,7 @@ public record SignUpRequestDto(
         if (email == null) {
             throw new IllegalArgumentException("Email은 null일 수 없습니다.");
         }
-        if (phone == null) {
+        if (phoneNum == null) {
             throw new IllegalArgumentException("Phone number는 null일 수 없습니다.");
         }
         if (password == null) {
@@ -36,13 +37,17 @@ public record SignUpRequestDto(
         if (nickname == null) {
             throw new IllegalArgumentException("Nickname은 null일 수 없습니다.");
         }
+        if(univName == null){
+            throw new IllegalArgumentException("학교 이름은 null일 수 없습니다.");
+        }
 
         // 각 필드에서 추가적인 유효성 검사가 필요하다면, 이곳에서 추가 가능
         // 예를 들어, Role의 유효성 검사
         role = new RoleDto(role.role());
         email = new EmailDto(email.email());
-        phone = new PhoneNumberDto(phone.phoneNumber());
+        phoneNum = new PhoneNumberDto(phoneNum.phoneNumber());
         password = new PasswordDto(password.password());
         nickname = new NicknameDto(nickname.nickname());
+        univName = new UniversityDto(univName.univName());
     }
 }

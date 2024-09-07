@@ -27,13 +27,13 @@ public class UserService {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         }
 
-        if(userRepository.existsByPhone(signUpRequest.phone().phoneNumber())){
+        if(userRepository.existsByPhone(signUpRequest.phoneNum().phoneNumber())){
             throw new IllegalArgumentException("이미 가입된 전화번호 입니다.");
         }
 
         // 이메일 인증 여부와 전화번호 인증 여부를 개별적으로 확인
         boolean isEmailVerified = userUtils.isEmailVerified(signUpRequest.email().email());
-        boolean isPhoneVerified = userUtils.isPhoneVerified(signUpRequest.phone().phoneNumber());
+        boolean isPhoneVerified = userUtils.isPhoneVerified(signUpRequest.phoneNum().phoneNumber());
 
         // 인증 여부를 로그로 출력
         System.out.println("이메일 인증 여부: " + isEmailVerified);
@@ -60,10 +60,10 @@ public class UserService {
         }
 
         //토큰 생성
-        String accessToken = jwtTokenProvider.generateAccessToken(user.getPhone());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getPhone());
+        String accessToken = jwtTokenProvider.generateAccessToken(user.getPhoneNum());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getPhoneNum());
 
-        userUtils.saveRefreshToken(user.getPhone(),refreshToken);
+        userUtils.saveRefreshToken(user.getPhoneNum(),refreshToken);
         return accessToken;
     }
 }
