@@ -27,12 +27,8 @@ public class RoleDtoDeserializer extends JsonDeserializer<RoleDto> {
     @Override
     public RoleDto deserialize(JsonParser p, DeserializationContext ctxt)
             throws IOException, JsonProcessingException {
-        TextNode node = p.getCodec().readTree(p);
-        String role = node.textValue();
-
-        // Validate role using RoleValidator
+        String role = p.getText();  // TextNode 대신 바로 getText 사용
         roleValidator.validate(role);
-
         return new RoleDto(role);
     }
 }

@@ -1,6 +1,6 @@
 package com.example.campusfinder.user.dto.request.element;
 
-import com.example.campusfinder.user.dto.deserializer.RoleDtoDeserializer;
+import com.example.campusfinder.user.dto.deserializer.UniversityDtoDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
@@ -14,5 +14,5 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  * -----------------------------------------------------------
  * 2024-08-20        tlswl       최초 생성
  */
-@JsonDeserialize(using = RoleDtoDeserializer.class)
+@JsonDeserialize(using = UniversityDtoDeserializer.class)
 public record UniversityDto(String univName) { }
