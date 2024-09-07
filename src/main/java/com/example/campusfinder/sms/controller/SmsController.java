@@ -27,7 +27,7 @@ import java.io.IOException;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/sms-certification")
+@RequestMapping("/api/certification/sms")
 public class SmsController {
 
     private final SmsService smsService;

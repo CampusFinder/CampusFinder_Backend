@@ -33,7 +33,7 @@ public class SmsService {
 
     @Transactional
     public void sendSms(SmsRequest request) {
-        String phoneNumber = request.phoneNumber();
+        String phoneNumber = request.phoneNum();
         String certificationNumber = generateRandomCode();
 
         // 이메일 인증이 완료되지 않은 경우, SMS 인증 불가
@@ -57,14 +57,14 @@ public class SmsService {
         if (!isValidCertification(request)) {
             throw new IllegalArgumentException("인증번호가 올바르지 않습니다.");
         }
-        smsCertificationRepository.verifyPhone(request.phoneNumber());
-        //smsCertificationRepository.removeSmsCertification(request.phoneNumber());
+        smsCertificationRepository.verifyPhone(request.phoneNum());
+        //smsCertificationRepository.removeSmsCertification(request.phoneNum());
     }
 
     // 인증번호 검증 로직
     private boolean isValidCertification(SmsRequest request) {
-        return smsCertificationRepository.hasKey(request.phoneNumber()) &&
-                smsCertificationRepository.getSmsCertification(request.phoneNumber())
+        return smsCertificationRepository.hasKey(request.phoneNum()) &&
+                smsCertificationRepository.getSmsCertification(request.phoneNum())
                         .equals(request.code());
     }
 }
