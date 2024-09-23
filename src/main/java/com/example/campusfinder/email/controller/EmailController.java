@@ -4,6 +4,13 @@ import com.example.campusfinder.core.base.BaseResponse;
 import com.example.campusfinder.email.dto.EmailRequest;
 import com.example.campusfinder.email.dto.EmailVerifyRequest;
 import com.example.campusfinder.email.service.EmailVerificationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +25,31 @@ public class EmailController {
 
     private final EmailVerificationService emailVerificationService;
 
+    @Operation(summary = "이메일 인증번호 전송 API", description = "입력한 이메일로 인증코드를 전송")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "인증코드 전송 성공",
+                    content = @Content(schema = @Schema(
+                            implementation = BaseResponse.class))),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(
+                            implementation = BaseResponse.class))),
+    })
     @PostMapping("/send")
-    public ResponseEntity<BaseResponse> sendVerificationCode(@RequestBody EmailRequest emailRequest) throws IOException {
+    public ResponseEntity<BaseResponse> sendVerificationCode(
+            @Parameter(description = "role: PROFESSOR, STUDENT 중 1개 선택(enum), univName: 00대학교 형식, email: 교수임시이메일(tlswlgns1003@naver.com)",
+                    required = true,
+                    examples = @ExampleObject(value = """
+                            {
+                              "role": "STUDENT",
+                              "email": "tlswlgns1003@sju.ac.kr",
+                              "univName": "세종대학교"
+                            }
+                            """)
+            )@RequestBody EmailRequest emailRequest) throws IOException {
         try {
             emailVerificationService.sendVerificationCode(emailRequest);
             return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "인증 코드가 전송되었습니다."));
@@ -28,8 +58,29 @@ public class EmailController {
         }
     }
 
+    @Operation(summary = "인증 코드 확인", description = "사용자가 입력한 인증 코드가 유효한지 확인, 메일받고 5분지나면 다시 인증 받아야함")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "이메일 인증 성공",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 인증 코드",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
+    })
     @PostMapping("/verify")
-    public ResponseEntity<BaseResponse> verifyCode(@RequestBody EmailVerifyRequest request) throws IOException {
+    public ResponseEntity<BaseResponse> verifyCode(
+            @Parameter(description = "이메일 인증 코드 요청",
+                    required = true,
+                    examples = @ExampleObject(value = """
+                            {
+                              "email": "tlswlgns1003@sju.ac.kr",
+                              "univName": "세종대학교",
+                              "code": 123456,
+                              "role": "STUDENT"
+                            }
+                            """)
+            )
+            @RequestBody EmailVerifyRequest request) throws IOException {
         try {
             boolean isVerified = emailVerificationService.verifyCode(request.email(), request.univName(), request.code(), request.role());
             if (isVerified) {
@@ -44,8 +95,24 @@ public class EmailController {
         }
     }
 
+    @Operation(summary = "이메일 인증 상태 확인", description = "이메일 인증이 완료되었는지 확인")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "이메일 인증 완료",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+            @ApiResponse(responseCode = "401", description = "이메일 인증 미완료",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
+    })
     @GetMapping("/status")
-    public ResponseEntity<BaseResponse> checkVerificationStatus(@RequestParam String email) {
+    public ResponseEntity<BaseResponse> checkVerificationStatus(
+            @Parameter(description = "확인할 이메일 주소",
+                    required = true,
+                    examples = @ExampleObject(value = """
+                            {
+                              "email": "tlswlgns1003@sju.ac.kr"
+                            }
+                            """)
+            )
+            @RequestParam String email) {
         boolean isPending = emailVerificationService.isVerificationPending(email);
 
         if (isPending) {
