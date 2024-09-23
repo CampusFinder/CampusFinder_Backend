@@ -2,6 +2,7 @@ package com.example.campusfinder.user.dto.request.element;
 
 import com.example.campusfinder.user.dto.deserializer.EmailDtoDeserializer;
 import com.example.campusfinder.user.validates.EmailValidator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
@@ -17,4 +18,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  */
 @JsonDeserialize(using = EmailDtoDeserializer.class)
 public record EmailDto(String email) {
+    @JsonValue
+    public String getEmail(){
+        return email;
+    }
 }

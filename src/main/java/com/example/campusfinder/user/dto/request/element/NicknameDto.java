@@ -2,6 +2,7 @@ package com.example.campusfinder.user.dto.request.element;
 
 import com.example.campusfinder.user.dto.deserializer.NicknameDtoDeserializer;
 import com.example.campusfinder.user.validates.NicknameValidator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
@@ -17,4 +18,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  */
 @JsonDeserialize(using = NicknameDtoDeserializer.class)
 public record NicknameDto(String nickname) {
+    @JsonValue
+    public String getNickName(){
+        return nickname;
+    }
 }

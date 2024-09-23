@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Random;
 
 import static com.univcert.api.UnivCert.*;
 
@@ -18,6 +19,7 @@ import static com.univcert.api.UnivCert.*;
 public class EmailVerificationUtils {
 
     private final StringRedisTemplate redisTemplate;
+    private final EmailSender emailSender;
     @Value("${univcert.api-key}")
     private String univCertApiKey;
     private final static long EXPIRATION_TIME = 600L; // 5분
@@ -27,6 +29,7 @@ public class EmailVerificationUtils {
         certify(univCertApiKey, emailRequest.email(), emailRequest.univName(), true);
         redisTemplate.opsForValue().set(redisKey, "PENDING", Duration.ofSeconds(EXPIRATION_TIME));
     }
+
 
     public boolean verifyStudentCode(String email, String univName, int code) throws IOException {
         String redisKey = "email:verification:" + email;
@@ -41,19 +44,40 @@ public class EmailVerificationUtils {
         return isVerified;
     }
 
-    public boolean verifyProfessorCode(String email, int code) {
-        // 교수 인증 로직 구현
-        // 예시로 교수 인증 로직 추가
+    public boolean verifyProfessorCode(String email, int code) throws IOException {
         String redisKey = "email:verification:" + email;
-        return redisTemplate.opsForValue().get(redisKey).equals(String.valueOf(code));
+        String storedCode = redisTemplate.opsForValue().get(redisKey);
+
+        if (storedCode == null) {
+            // Redis에 값이 없거나 만료된 경우 처리
+            clearPendingVerification(email); // Redis 초기화
+            throw new IllegalArgumentException("유효시간이 지났습니다. 다시 인증을 받아주세요.");
+        }
+
+        // 코드가 일치하는지 확인
+        return storedCode.equals(String.valueOf(code));
     }
 
+    // 랜덤 6자리 숫자 생성 함수
+    private String generateVerificationCode() {
+        Random random = new Random();
+        int randomCode = 100000 + random.nextInt(900000);  // 100000 ~ 999999 사이의 랜덤 숫자
+        return String.valueOf(randomCode);
+    }
+
+    // 교수 인증 로직 수정: 이메일 발송을 위한 로직 추가
     public void sendProfessorVerificationCode(String email) {
-        // 교수 인증 코드를 생성 및 Redis에 저장하는 로직 추가
-        String code = "123456";  // 예시로 고정된 코드 사용, 실제로는 랜덤 생성 필요
+        // 랜덤 6자리 인증번호 생성
+        String code = generateVerificationCode();
         String redisKey = "email:verification:" + email;
+
+        // Redis에 인증번호 저장 (유효시간 10분)
         redisTemplate.opsForValue().set(redisKey, code, Duration.ofMinutes(10));
-        // 이메일로 발송하는 로직 추가 필요
+
+        // 인증번호 이메일 전송
+        String subject = "CampusFinder 교수 인증번호";
+        String text = "안녕하세요, CampusFinder입니다.\n\n" + "교수님의 인증번호는 " + code + " 입니다.";
+        emailSender.sendEmail(email, subject, text);  // 이메일 발송
     }
 
     public void clearPendingVerification(String email) throws IOException {

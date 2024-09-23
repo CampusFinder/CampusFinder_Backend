@@ -2,6 +2,7 @@ package com.example.campusfinder.user.dto.request.element;
 
 import com.example.campusfinder.user.dto.deserializer.PasswordDtoDeserializer;
 import com.example.campusfinder.user.validates.PasswordValidator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
@@ -17,4 +18,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  */
 @JsonDeserialize(using = PasswordDtoDeserializer.class)
 public record PasswordDto(String password) {
+    @JsonValue
+    public String getPassword(){
+        return password;
+    }
 }
