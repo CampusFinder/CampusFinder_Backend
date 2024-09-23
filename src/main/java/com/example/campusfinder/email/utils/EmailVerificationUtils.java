@@ -44,9 +44,18 @@ public class EmailVerificationUtils {
         return isVerified;
     }
 
-    public boolean verifyProfessorCode(String email, int code) {
+    public boolean verifyProfessorCode(String email, int code) throws IOException {
         String redisKey = "email:verification:" + email;
-        return redisTemplate.opsForValue().get(redisKey).equals(String.valueOf(code));
+        String storedCode = redisTemplate.opsForValue().get(redisKey);
+
+        if (storedCode == null) {
+            // Redis에 값이 없거나 만료된 경우 처리
+            clearPendingVerification(email); // Redis 초기화
+            throw new IllegalArgumentException("유효시간이 지났습니다. 다시 인증을 받아주세요.");
+        }
+
+        // 코드가 일치하는지 확인
+        return storedCode.equals(String.valueOf(code));
     }
 
     // 랜덤 6자리 숫자 생성 함수
