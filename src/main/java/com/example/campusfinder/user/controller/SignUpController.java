@@ -49,7 +49,7 @@ public class SignUpController {
     @PostMapping
     public ResponseEntity<BaseResponse> signUp(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "회원가입 요청 데이터",
+                    description = "이메일: 형식지켜서, 닉네임:2~10글자, 비밀번호:4자리 이상, 번호:11자리, role:STUDENT, PROFESSOR",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
