@@ -1,5 +1,6 @@
 package com.example.campusfinder.email.service;
 
+import com.example.campusfinder.email.config.ProfessorEmailConfig;
 import com.example.campusfinder.email.dto.EmailRequest;
 import com.example.campusfinder.email.repository.EmailVerificationRepository;
 import com.example.campusfinder.email.utils.EmailVerificationUtils;
@@ -8,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +18,12 @@ public class EmailVerificationService {
 
     private final EmailVerificationUtils emailVerificationUtils;
     private final EmailVerificationRepository emailVerificationRepository;
+    private final ProfessorEmailConfig professorEmailConfig;
+
+    // 임시로 교수님의 학교 이메일 및 세종대학교로 고정
+    private static final String PROFESSOR_EMAIL = "tlswlgns1003@naver.com";
+    private static final String UNIVERSITY_NAME = "세종대학교";
+
 
     public void sendVerificationCode(EmailRequest emailRequest) throws IOException {
         Role role = emailRequest.role();
@@ -27,20 +36,6 @@ public class EmailVerificationService {
             handleProfessorVerification(emailRequest);
         }
     }
-
-//    private void handleStudentVerification(EmailRequest emailRequest) throws IOException {
-//        if (emailVerificationRepository.isEmailVerified(emailRequest.email())) {
-//            if (!emailVerificationRepository.isRegistered(emailRequest.email())) {
-//                emailVerificationUtils.clearPendingVerification(emailRequest.email());
-//                emailVerificationUtils.sendVerificationCode(emailRequest);
-//            } else {
-//                throw new IllegalArgumentException("이미 인증된 이메일입니다.");
-//            }
-//        } else {
-//            emailVerificationUtils.clearPendingVerification(emailRequest.email());
-//            emailVerificationUtils.sendVerificationCode(emailRequest);
-//        }
-//    }
 
     //오류 수정 test
     private void handleStudentVerification(EmailRequest emailRequest) throws IOException {
@@ -60,14 +55,23 @@ public class EmailVerificationService {
     }
 
     private void handleProfessorVerification(EmailRequest emailRequest) {
-        // 교수 인증 로직 (임시)
-        if (emailVerificationRepository.isRegistered(emailRequest.email())) {
-            // 교수 이메일로 인증 코드 발송 로직 추가
+        // 학교 이메일 및 학교 이름이 정확히 일치하는 경우만 인증 메일을 보냄
+        if (PROFESSOR_EMAIL.equals(emailRequest.email()) && UNIVERSITY_NAME.equals(emailRequest.univName())) {
             emailVerificationUtils.sendProfessorVerificationCode(emailRequest.email());
+
         } else {
-            throw new IllegalArgumentException("등록되지 않은 교수 이메일입니다.");
+            throw new IllegalArgumentException("등록되지 않은 교수 이메일이거나 학교 정보가 일치하지 않습니다.");
         }
     }
+
+    private boolean isAllowedDomain(String email) {
+        // 이메일 도메인 추출
+        String domain = email.substring(email.lastIndexOf("@") + 1);
+        // 설정된 도메인 리스트에 해당 도메인이 포함되어 있는지 확인
+        List<String> allowedDomains = professorEmailConfig.getAllowedDomains();
+        return allowedDomains.contains(domain);
+    }
+
 
     public boolean verifyCode(String email, String univName, int code, Role role) throws IOException {
         boolean isVerified = false;
