@@ -44,8 +44,22 @@ public class SignInController {
             @ApiResponse(
                     responseCode = "200",
                     description = "로그인 성공",
-                    content = @Content(schema = @Schema(
-                            implementation = BaseResponse.class))),
+                    content = @Content(
+                            schema = @Schema(implementation = BaseResponse.class),
+                            examples = @ExampleObject(
+                                    name = "성공 응답 예시",
+                                    value = """
+                                            {
+                                                "status": 200,
+                                                "message": "성공",
+                                                "data": {
+                                                    "accessToken": "ACCESS_TOKEN",
+                                                    "refreshToken": "REFRESH_TOKEN"
+                                                }
+                                            }
+                                            """
+                            )
+                    )),
             @ApiResponse(
                     responseCode = "400",
                     description = "잘못된 요청",
