@@ -9,8 +9,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import java.io.IOException;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/certification/email")
+@Tag(name = "이메일 인증 API")
 public class EmailController {
 
     private final EmailVerificationService emailVerificationService;
@@ -40,16 +43,19 @@ public class EmailController {
     })
     @PostMapping("/send")
     public ResponseEntity<BaseResponse> sendVerificationCode(
-            @Parameter(description = "role: PROFESSOR, STUDENT 중 1개 선택(enum), univName: 00대학교 형식, email: 교수임시이메일(tlswlgns1003@naver.com)",
-                    required = true,
-                    examples = @ExampleObject(value = """
-                            {
-                              "role": "STUDENT",
-                              "email": "tlswlgns1003@sju.ac.kr",
-                              "univName": "세종대학교"
-                            }
-                            """)
-            )@RequestBody EmailRequest emailRequest) throws IOException {
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "role: PROFESSOR, STUDENT 중 1개 선택(enum), univName: 00대학교 형식, email: 교수임시이메일(tlswlgns1003@naver.com)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "role": "STUDENT",
+                                      "email": "tlswlgns1003@sju.ac.kr",
+                                      "univName": "세종대학교"
+                                    }
+                                    """),
+                            schema = @Schema(implementation = EmailRequest.class)
+                    ))
+           EmailRequest emailRequest) throws IOException {
         try {
             emailVerificationService.sendVerificationCode(emailRequest);
             return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "인증 코드가 전송되었습니다."));
@@ -69,18 +75,20 @@ public class EmailController {
     })
     @PostMapping("/verify")
     public ResponseEntity<BaseResponse> verifyCode(
-            @Parameter(description = "이메일 인증 코드 요청",
-                    required = true,
-                    examples = @ExampleObject(value = """
-                            {
-                              "email": "tlswlgns1003@sju.ac.kr",
-                              "univName": "세종대학교",
-                              "code": 123456,
-                              "role": "STUDENT"
-                            }
-                            """)
-            )
-            @RequestBody EmailVerifyRequest request) throws IOException {
+            @RequestBody(description = "이메일 인증 코드 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "email": "tlswlgns1003@sju.ac.kr",
+                                      "univName": "세종대학교",
+                                      "code": 123456,
+                                      "role": "STUDENT"
+                                    }
+                                    """),
+                            schema = @Schema(implementation = EmailVerifyRequest.class)
+                    ))
+            EmailVerifyRequest request) throws IOException {
         try {
             boolean isVerified = emailVerificationService.verifyCode(request.email(), request.univName(), request.code(), request.role());
             if (isVerified) {
@@ -104,15 +112,16 @@ public class EmailController {
     })
     @GetMapping("/status")
     public ResponseEntity<BaseResponse> checkVerificationStatus(
-            @Parameter(description = "확인할 이메일 주소",
-                    required = true,
-                    examples = @ExampleObject(value = """
-                            {
-                              "email": "tlswlgns1003@sju.ac.kr"
-                            }
-                            """)
-            )
-            @RequestParam String email) {
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "확인할 이메일 주소",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "email": "tlswlgns1003@sju.ac.kr"
+                                    }
+                                    """),
+                            schema = @Schema(implementation = String.class)
+                    )) @RequestParam String email) {
         boolean isPending = emailVerificationService.isVerificationPending(email);
 
         if (isPending) {
