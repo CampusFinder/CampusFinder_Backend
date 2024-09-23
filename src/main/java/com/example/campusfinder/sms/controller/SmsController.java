@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,7 @@ import java.io.IOException;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/certification/sms")
+@Tag(name="문자 인증 API")
 public class SmsController {
 
     private final SmsService smsService;
@@ -57,18 +59,19 @@ public class SmsController {
     })
     @PostMapping("/send")
     public ResponseEntity<BaseResponse> sendSms(
-            @Parameter(
-                    description = "code:String, phoneNum:-없이 입력",
-                    required = true,
-                    examples = @ExampleObject(value = """
-                            {
-                              "email": "tlswlgns1003@sju.ac.kr",
-                              "phoneNum": "01012345678",
-                              "code": "123456"
-                            }
-                            """)
-            )
-            @RequestBody SmsRequest request) {
+            @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "이메일과 전화번호를 입력하여 SMS 인증 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                {
+                                  "phoneNum": "01012345678",
+                                  "email": "tlswlgns1003@sju.ac.kr"
+                                }
+                                """),
+                            schema = @Schema(implementation = SmsRequest.class)
+                    )
+            )SmsRequest request) {
         boolean isVerified = emailVerificationService.isEmailVerified(request.email());
         System.out.println("이메일 인증 상태: " + isVerified);  // 로그 추가
 
@@ -99,17 +102,20 @@ public class SmsController {
     })
     @PostMapping("/verify")
     public ResponseEntity<BaseResponse> verifySms(
-            @Parameter(
+            @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "SMS 인증 확인",
-                    required = true,
-                    examples = @ExampleObject(value = """
-                            {
-                              "phoneNum": "01012345678",
-                              "code": 123456
-                            }
-                            """)
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                {
+                                  "phoneNum": "01012345678",
+                                  "code": "123456"
+                                }
+                                """),
+                            schema = @Schema(implementation = SmsRequest.class)
+                    )
             )
-            @RequestBody SmsRequest request) {
+            SmsRequest request) {
         smsService.verifySms(request);
         return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SMS 인증 성공"));
     }
