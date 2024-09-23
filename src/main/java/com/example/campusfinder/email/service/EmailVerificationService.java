@@ -28,18 +28,35 @@ public class EmailVerificationService {
         }
     }
 
+//    private void handleStudentVerification(EmailRequest emailRequest) throws IOException {
+//        if (emailVerificationRepository.isEmailVerified(emailRequest.email())) {
+//            if (!emailVerificationRepository.isRegistered(emailRequest.email())) {
+//                emailVerificationUtils.clearPendingVerification(emailRequest.email());
+//                emailVerificationUtils.sendVerificationCode(emailRequest);
+//            } else {
+//                throw new IllegalArgumentException("이미 인증된 이메일입니다.");
+//            }
+//        } else {
+//            emailVerificationUtils.clearPendingVerification(emailRequest.email());
+//            emailVerificationUtils.sendVerificationCode(emailRequest);
+//        }
+//    }
+
+    //오류 수정 test
     private void handleStudentVerification(EmailRequest emailRequest) throws IOException {
-        if (emailVerificationRepository.isEmailVerified(emailRequest.email())) {
-            if (!emailVerificationRepository.isRegistered(emailRequest.email())) {
-                emailVerificationUtils.clearPendingVerification(emailRequest.email());
-                emailVerificationUtils.sendVerificationCode(emailRequest);
-            } else {
-                throw new IllegalArgumentException("이미 인증된 이메일입니다.");
-            }
-        } else {
-            emailVerificationUtils.clearPendingVerification(emailRequest.email());
-            emailVerificationUtils.sendVerificationCode(emailRequest);
+        // 이미 회원가입이 완료된 이메일인 경우
+        if (emailVerificationRepository.isRegistered(emailRequest.email())) {
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         }
+
+        // 이미 인증된 이메일인 경우
+        if (emailVerificationRepository.isEmailVerified(emailRequest.email())) {
+            throw new IllegalArgumentException("이미 인증된 이메일입니다.");
+        }
+
+        // 새로 이메일 인증 진행
+        emailVerificationUtils.clearPendingVerification(emailRequest.email());
+        emailVerificationUtils.sendVerificationCode(emailRequest);
     }
 
     private void handleProfessorVerification(EmailRequest emailRequest) {
