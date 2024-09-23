@@ -2,6 +2,7 @@ package com.example.campusfinder.user.dto.request.element;
 
 import com.example.campusfinder.user.dto.deserializer.RoleDtoDeserializer;
 import com.example.campusfinder.user.validates.RoleValidator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
@@ -17,4 +18,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  */
 @JsonDeserialize(using = RoleDtoDeserializer.class)
 public record RoleDto(String role) {
+    @JsonValue
+    public String getRole(){
+        return role;
+    }
 }

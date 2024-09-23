@@ -2,6 +2,7 @@ package com.example.campusfinder.user.dto.request.element;
 
 import com.example.campusfinder.user.dto.deserializer.PhoneNumberDtoDeserializer;
 import com.example.campusfinder.user.validates.PhoneNumberValidator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
@@ -17,4 +18,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  */
 @JsonDeserialize(using = PhoneNumberDtoDeserializer.class)
 public record PhoneNumberDto(String phoneNumber) {
+    @JsonValue
+    public String getPhoneNum(){
+        return phoneNumber;
+    }
 }

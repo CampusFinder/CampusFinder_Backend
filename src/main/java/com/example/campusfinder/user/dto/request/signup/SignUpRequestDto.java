@@ -1,6 +1,7 @@
 package com.example.campusfinder.user.dto.request.signup;
 
 import com.example.campusfinder.user.dto.request.element.*;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 /**
  * packageName    : com.example.campusfinder.user.dto.request.signup
