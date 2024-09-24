@@ -55,7 +55,7 @@ public class EmailController {
                                     """),
                             schema = @Schema(implementation = EmailRequest.class)
                     ))
-           EmailRequest emailRequest) throws IOException {
+           @org.springframework.web.bind.annotation.RequestBody EmailRequest emailRequest) throws IOException {
         try {
             emailVerificationService.sendVerificationCode(emailRequest);
             return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "인증 코드가 전송되었습니다."));
@@ -88,7 +88,7 @@ public class EmailController {
                                     """),
                             schema = @Schema(implementation = EmailVerifyRequest.class)
                     ))
-            EmailVerifyRequest request) throws IOException {
+            @org.springframework.web.bind.annotation.RequestBody EmailVerifyRequest request) throws IOException {
         try {
             boolean isVerified = emailVerificationService.verifyCode(request.email(), request.univName(), request.code(), request.role());
             if (isVerified) {
