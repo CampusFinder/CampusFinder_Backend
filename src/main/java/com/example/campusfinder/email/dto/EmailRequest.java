@@ -27,7 +27,7 @@ public record EmailRequest(
             throw new IllegalArgumentException("유효하지 않은 이메일 형식입니다.");
         }
         if (role == null) {
-            throw new IllegalArgumentException("ROLE을 입력해주세요.");
+            throw new IllegalArgumentException("role을 입력해주세요.");
         }
     }
 }

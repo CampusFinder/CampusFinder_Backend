@@ -2,8 +2,6 @@ package com.example.campusfinder.email.utils;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -14,17 +12,6 @@ import org.slf4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 
-/**
- * packageName    : com.example.campusfinder.email.utils
- * fileName       : EmailSender
- * author         : tlswl
- * date           : 2024-09-23
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2024-09-23        tlswl       최초 생성
- */
 @Component
 @RequiredArgsConstructor
 public class EmailSender {
