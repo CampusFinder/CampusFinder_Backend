@@ -76,4 +76,14 @@ public class UserService {
 
         return tokens;
     }
+
+    // 닉네임 중복 체크 메서드
+    public boolean isNicknameTaken(String nickname) {
+        return userRepository.existsByNickname(nickname);
+    }
+
+    // 비밀번호 일치 확인 메서드
+    public boolean isPasswordMatching(String password, String passwordConfirm) {
+        return password.equals(passwordConfirm);
+    }
 }

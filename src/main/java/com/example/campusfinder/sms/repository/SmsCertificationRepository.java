@@ -3,65 +3,48 @@ package com.example.campusfinder.sms.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
+
 import java.time.Duration;
-import com.example.campusfinder.sms.constant.Constant;
 
-
-/**
- * packageName    : com.example.campusfinder.sms.repository
- * fileName       : SmsCertificationRepository
- * author         : tlswl
- * date           : 2024-08-20
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2024-08-20        tlswl       최초 생성
- */
 @RequiredArgsConstructor
 @Repository
 public class SmsCertificationRepository {
 
     private final StringRedisTemplate redisTemplate;
 
-    //redis에서 사용할 키 생성
-    //입력이 01031005136이면 반환시 sms:01031005136
-    private String getRedisKey(String phoneNumber){
-        return Constant.PREFIX + phoneNumber;
+    // Redis 키 생성 메서드 (휴대폰 인증 여부 확인)
+    private String getVerificationKey(String phoneNumber) {
+        return "sms:verification:" + phoneNumber;
     }
 
-    //redis에 인증번호 저장, 300초동안 유지
-    public void createSmsCertification(String phoneNumber, String certificationNumber){
-        redisTemplate.opsForValue()
-                .set(getRedisKey(phoneNumber), certificationNumber, Duration.ofSeconds(Constant.LIMIT_TIME));
+    // Redis 키 생성 메서드 (회원가입 여부 확인)
+    private String getRegistrationKey(String phoneNumber) {
+        return "sms:registered:" + phoneNumber;
     }
 
-    //redis에서 전화번호에 해당하는 인증번호 조회
-    public String getSmsCertification(String phoneNumber){
-        return redisTemplate.opsForValue().get(getRedisKey(phoneNumber));
+    // 휴대폰 인증 여부 확인
+    public boolean isPhoneVerified(String phoneNumber) {
+        String verificationStatus = redisTemplate.opsForValue().get(getVerificationKey(phoneNumber));
+        return "VERIFIED".equals(verificationStatus);
     }
 
-    //redis에서 전화번호에 해당하는 인증번호 삭제
-    public void removeSmsCertification(String phoneNumber){
-        redisTemplate.delete(getRedisKey(phoneNumber));
+    // 휴대폰 인증 성공 시 상태 저장
+    public void markPhoneVerified(String phoneNumber) {
+        redisTemplate.opsForValue().set(getVerificationKey(phoneNumber), "VERIFIED");
     }
 
-    //redis에서 전화번호에 해당하는 인증번호 있는지 확인
-    public boolean hasKey(String phoneNumber){
-        return Boolean.TRUE.equals(redisTemplate.hasKey(getRedisKey(phoneNumber)));
+    // 회원가입 여부 확인
+    public boolean isRegistered(String phoneNumber) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey(getRegistrationKey(phoneNumber)));
     }
 
-    //휴대폰 인증이 완료되었는지 확인하는 메서드
-    public boolean isPhoneVerified(String phoneNumber){
-        String redisKey=Constant.PREFIX + phoneNumber;
-        String value=redisTemplate.opsForValue().get(redisKey);
-        return "VERIFIED".equals(value);
+    // 회원가입 완료 시 휴대폰 번호 등록
+    public void saveRegisteredPhoneNumber(String phoneNumber) {
+        redisTemplate.opsForValue().set(getRegistrationKey(phoneNumber), "REGISTERED", Duration.ofDays(1)); // 1일 동안 유지
     }
 
-    //휴대폰 인증 성공 시 호출되는 메서드
-    public void verifyPhone(String phoneNumber){
-        String redisKey=Constant.PREFIX+phoneNumber;
-        redisTemplate.opsForValue().set(redisKey,"VERIFIED");
+    // 인증 정보 삭제
+    public void clearVerificationState(String phoneNumber) {
+        redisTemplate.delete(getVerificationKey(phoneNumber));
     }
-
 }

@@ -27,44 +27,40 @@ import java.security.SecureRandom;
 public class SmsService {
 
     private final SmsSender smsSender;
-    private final SmsCertificationRepository smsCertificationRepository;
-    private final EmailVerificationRepository emailVerificationRepository;  // 이메일 인증 상태 확인을 위한 의존성 추가
+    private final RedisPhoneVerificationStore redisPhoneVerificationStore;
+    private final EmailVerificationRepository emailVerificationRepository;
 
+    private final static long EXPIRATION_TIME = 300L;  // 5분 유효 시간 설정
 
-    @Transactional
-    public void sendSms(SmsRequest request) {
-        String phoneNumber = request.phoneNum();
-        String certificationNumber = generateRandomCode();
-
-        // 이메일 인증이 완료되지 않은 경우, SMS 인증 불가
+    public void sendSmsVerification(SmsRequest request) {
+        // 이메일 인증이 완료되었는지 확인
         if (!emailVerificationRepository.isEmailVerified(request.email())) {
             throw new IllegalArgumentException("이메일 인증이 완료되지 않았습니다.");
         }
 
-        smsSender.sendSms(phoneNumber, String.format("[CampusFinder] 인증번호는 %s 입니다.", certificationNumber));
-        smsCertificationRepository.createSmsCertification(phoneNumber, certificationNumber);
+        // 이미 인증된 핸드폰 번호인지 확인
+        if (redisPhoneVerificationStore.isPhoneVerified(request.phoneNum())) {
+            throw new IllegalArgumentException("이미 인증된 핸드폰 번호입니다.");
+        }
+
+        // 이미 인증된 핸드폰 번호인지 확인
+        if (redisPhoneVerificationStore.isPhoneVerified(request.phoneNum())) {
+            // 회원가입이 완료되지 않은 경우 인증 상태를 초기화
+            redisPhoneVerificationStore.clearVerificationState(request.phoneNum());
+        }
+
+        // 새로운 인증 번호 생성 및 저장
+        String certificationNumber = generateRandomCode();
+        redisPhoneVerificationStore.savePendingState(request.phoneNum(), certificationNumber, EXPIRATION_TIME);
+
+        // SMS 발송
+        smsSender.sendSms(request.phoneNum(), String.format("[CampusFinder] 인증번호는 %s 입니다.", certificationNumber));
     }
 
-    // 6자리 인증번호 생성
+    // 6자리 인증번호 생성 메서드
     private String generateRandomCode() {
         SecureRandom random = new SecureRandom();
         int randomNumber = 100000 + random.nextInt(900000); // 100000부터 999999까지
         return String.valueOf(randomNumber);
-    }
-
-    // 인증번호 검증
-    public void verifySms(SmsRequest request) {
-        if (!isValidCertification(request)) {
-            throw new IllegalArgumentException("인증번호가 올바르지 않습니다.");
-        }
-        smsCertificationRepository.verifyPhone(request.phoneNum());
-        //smsCertificationRepository.removeSmsCertification(request.phoneNum());
-    }
-
-    // 인증번호 검증 로직
-    private boolean isValidCertification(SmsRequest request) {
-        return smsCertificationRepository.hasKey(request.phoneNum()) &&
-                smsCertificationRepository.getSmsCertification(request.phoneNum())
-                        .equals(request.code());
     }
 }

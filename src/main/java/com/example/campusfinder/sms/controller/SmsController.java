@@ -3,9 +3,8 @@ package com.example.campusfinder.sms.controller;
 import com.example.campusfinder.core.base.BaseResponse;
 import com.example.campusfinder.sms.dto.SmsRequest;
 import com.example.campusfinder.sms.service.SmsService;
-import com.example.campusfinder.email.service.EmailVerificationService; // 이메일 인증 서비스 추가
+import com.example.campusfinder.sms.service.SmsValidationService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,8 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
 
 /**
  * packageName    : com.example.campusfinder.sms.controller
@@ -36,87 +33,139 @@ import java.io.IOException;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/certification/sms")
-@Tag(name="문자 인증 API")
+@Tag(name = "문자 인증 API")
 public class SmsController {
 
-    private final SmsService smsService;
-    private final EmailVerificationService emailVerificationService; // 이메일 인증 서비스 의존성 추가
+    private final SmsService smsVerificationService;
+    private final SmsValidationService smsValidationService;
 
-    @Operation(summary = "SMS 인증번호 전송 API", description = "이메일 인증을 완료한 사용자의 핸드폰 번호로 SMS 인증 코드를 전송")
+    @Operation(
+            summary = "SMS 인증번호 전송 API",
+            description = "이메일 인증을 완료한 사용자의 핸드폰 번호로 SMS 인증 코드를 전송",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "SMS 전송을 위한 요청 본문. `phoneNum` 필드에는 사용자의 핸드폰 번호를, `email` 필드에는 이메일 주소를 입력",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = SmsRequest.class),
+                            examples = @ExampleObject(
+                                    name = "SMS 인증번호 전송 예시",
+                                    value = """
+                    {
+                      "phoneNum": "01031005136",
+                      "email": "tlswlgns1003@sju.ac.kr"
+                    }
+                    """
+                            )
+                    )
+            )
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "SMS 전송 성공",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class), examples = @ExampleObject(value = """
+                {
+                  "code": 200,
+                  "message": "SMS 전송 성공",
+                  "data": null
+                }
+            """))
+            ),
             @ApiResponse(
                     responseCode = "403",
                     description = "이메일 인증이 완료되지 않음",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class), examples = @ExampleObject(value = """
+                {
+                  "code": 403,
+                  "message": "이메일 인증이 완료되지 않았습니다.",
+                  "data": null
+                }
+            """))
+            ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "잘못된 요청",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
+                    description = "잘못된 요청 - 필수 파라미터가 누락되었거나 값이 잘못된 경우",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class), examples = @ExampleObject(value = """
+                {
+                  "code": 400,
+                  "message": "잘못된 요청입니다.",
+                  "data": null
+                }
+            """))
+            )
     })
     @PostMapping("/send")
-    public ResponseEntity<BaseResponse> sendSms(
-            @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "이메일과 전화번호를 입력하여 SMS 인증 요청",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(value = """
-                                {
-                                  "phoneNum": "01012345678",
-                                  "email": "tlswlgns1003@sju.ac.kr"
-                                }
-                                """),
-                            schema = @Schema(implementation = SmsRequest.class)
-                    )
-            )SmsRequest request) {
-        boolean isVerified = emailVerificationService.isEmailVerified(request.email());
-        System.out.println("이메일 인증 상태: " + isVerified);  // 로그 추가
-
-        if (!isVerified) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(BaseResponse.ofError(HttpStatus.FORBIDDEN.value(), "이메일 인증이 완료되지 않았습니다."));
+    public ResponseEntity<BaseResponse> sendSms(@RequestBody SmsRequest request) {
+        try {
+            smsVerificationService.sendSmsVerification(request);
+            return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SMS 전송 성공"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BaseResponse.ofError(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
         }
-
-        smsService.sendSms(request);
-        return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SMS 전송 성공"));
     }
 
-    // 인증번호 확인
-    @Operation(summary = "SMS 인증번호 확인 API", description = "사용자가 입력한 SMS 인증 번호가 유효한지 확인, 5분지나면 무효화")
+    @Operation(
+            summary = "SMS 인증번호 확인 API",
+            description = "사용자가 입력한 SMS 인증 번호가 유효한지 확인하고, 인증이 완료되었는지 검증",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "SMS 인증 확인을 위한 요청 본문. `phoneNum` 필드에는 사용자의 핸드폰 번호를, `code` 필드에는 사용자가 입력한 인증 코드를 입력",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = SmsRequest.class),
+                            examples = @ExampleObject(
+                                    name = "SMS 인증번호 확인 예시",
+                                    value = """
+                    {
+                      "phoneNum": "01031005136",
+                      "code": "123456"
+                    }
+                    """
+                            )
+                    )
+            )
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "SMS 인증 성공",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "잘못된 요청",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class), examples = @ExampleObject(value = """
+                {
+                  "code": 200,
+                  "message": "SMS 인증 성공",
+                  "data": null
+                }
+            """))
+            ),
             @ApiResponse(
                     responseCode = "401",
-                    description = "인증 코드가 유효하지 않음",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
+                    description = "인증 코드가 유효하지 않음 - 인증 코드가 틀리거나 만료된 경우",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class), examples = @ExampleObject(value = """
+                {
+                  "code": 401,
+                  "message": "인증 코드가 유효하지 않습니다.",
+                  "data": null
+                }
+            """))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 - 필수 파라미터가 누락되었거나 값이 잘못된 경우",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class), examples = @ExampleObject(value = """
+                {
+                  "code": 400,
+                  "message": "잘못된 요청입니다.",
+                  "data": null
+                }
+            """))
+            )
     })
     @PostMapping("/verify")
-    public ResponseEntity<BaseResponse> verifySms(
-            @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "SMS 인증 확인",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(value = """
-                                {
-                                  "phoneNum": "01012345678",
-                                  "code": "123456"
-                                }
-                                """),
-                            schema = @Schema(implementation = SmsRequest.class)
-                    )
-            )
-            SmsRequest request) {
-        smsService.verifySms(request);
-        return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SMS 인증 성공"));
+    public ResponseEntity<BaseResponse> verifySms(@RequestBody SmsRequest request) {
+        try {
+            smsValidationService.verifySms(request);
+            return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SMS 인증 성공"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(BaseResponse.ofError(HttpStatus.UNAUTHORIZED.value(), e.getMessage()));
+        }
     }
 }

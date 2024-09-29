@@ -20,7 +20,6 @@ public record SignUpRequestDto(
         EmailDto email,
         PhoneNumberDto phoneNum,
         PasswordDto password,
-        PasswordDto passwordConfirm,
         NicknameDto nickname,
         UniversityDto univName
 ) {
@@ -37,9 +36,6 @@ public record SignUpRequestDto(
         if (password == null) {
             throw new IllegalArgumentException("Password는 null일 수 없습니다.");
         }
-        if(passwordConfirm==null) {
-            throw new IllegalArgumentException("Password확인은 null일 수 없습니다.");
-        }
         if (nickname == null) {
             throw new IllegalArgumentException("Nickname은 null일 수 없습니다.");
         }
@@ -47,9 +43,6 @@ public record SignUpRequestDto(
             throw new IllegalArgumentException("학교 이름은 null일 수 없습니다.");
         }
 
-        if(!password.password().equals(passwordConfirm.password())){
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
 
         // 각 필드에서 추가적인 유효성 검사가 필요하다면, 이곳에서 추가 가능
         // 예를 들어, Role의 유효성 검사

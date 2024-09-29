@@ -1,6 +1,8 @@
 package com.example.campusfinder.user.controller;
 
 import com.example.campusfinder.core.base.BaseResponse;
+import com.example.campusfinder.user.dto.request.signup.NickNameCheckRequest;
+import com.example.campusfinder.user.dto.request.signup.PasswordCheckRequest;
 import com.example.campusfinder.user.dto.request.signup.SignUpRequestDto;
 import com.example.campusfinder.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,6 +39,38 @@ public class SignUpController {
 
     private final UserService userService;
 
+    @Operation(summary = "닉네임 중복 확인 API", description = "사용자가 입력한 닉네임이 중복되는지 확인")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "닉네임 사용 가능",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+            @ApiResponse(responseCode = "409", description = "중복된 닉네임",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
+    })
+    @PostMapping("/nickname-check")
+    public ResponseEntity<BaseResponse> checkNickname(@RequestBody NickNameCheckRequest nicknameRequest) {
+        if (userService.isNicknameTaken(nicknameRequest.nickname())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(BaseResponse.ofError(HttpStatus.CONFLICT.value(), "중복된 닉네임입니다."));
+        }
+        return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "닉네임 사용이 가능합니다."));
+    }
+
+    @Operation(summary = "비밀번호 확인 API", description = "사용자가 입력한 비밀번호와 비밀번호 확인이 일치하는지 확인")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "비밀번호 일치",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+            @ApiResponse(responseCode = "400", description = "비밀번호 불일치",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
+    })
+    @PostMapping("/password-check")
+    public ResponseEntity<BaseResponse> checkPassword(@RequestBody PasswordCheckRequest passwordCheckRequest) {
+        if (!userService.isPasswordMatching(passwordCheckRequest.password(), passwordCheckRequest.passwordConfirm())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(BaseResponse.ofError(HttpStatus.BAD_REQUEST.value(), "비밀번호가 일치하지 않습니다."));
+        }
+        return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "비밀번호가 일치합니다."));
+    }
+
     @Operation(summary = "회원가입 API", description = "회원 가입 요청을 처리하고, 성공 시 완료 메시지를 반환")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "회원가입 성공",
@@ -61,7 +95,6 @@ public class SignUpController {
                                                 "email": "tlswlgns1003@sju.ac.kr",
                                                 "phoneNum": "01012345678",
                                                 "password": "1234567",
-                                                "passwordConfirm": "1234567",
                                                 "nickname": "boong",
                                                 "univName": "세종대학교"
                                             }
