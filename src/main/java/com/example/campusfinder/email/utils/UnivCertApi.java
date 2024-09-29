@@ -16,13 +16,16 @@ public class UnivCertApi {
     private String univCertApiKey;
 
     // 인증 요청 메서드
-    public void requestCertification(EmailRequest emailRequest) throws IOException {
+    public String requestCertification(EmailRequest emailRequest) throws IOException {
         Map<String, Object> response = certify(univCertApiKey, emailRequest.email(), emailRequest.univName(), true);
 
         // 응답에서 인증 성공 여부 확인
         if (response == null || !Boolean.TRUE.equals(response.get("success"))) {
             throw new IllegalStateException("인증 요청이 실패했습니다. API 응답: " + response);
         }
+
+        // 인증번호가 응답에 포함된 경우 반환
+        return response.get("code").toString();  // 인증번호가 포함된다고 가정
     }
 
     // 인증 코드 검증 메서드
@@ -35,7 +38,7 @@ public class UnivCertApi {
         return true;
     }
 
-    // 특정 유저 인증 초기화
+    // UnivCert API 상태 초기화 메서드 (요청을 취소하고 초기화)
     public void clearCertification(String email) throws IOException {
         Map<String, Object> response = clear(univCertApiKey, email);
 
