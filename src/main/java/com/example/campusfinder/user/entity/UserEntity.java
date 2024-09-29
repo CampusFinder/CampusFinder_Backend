@@ -1,5 +1,6 @@
 package com.example.campusfinder.user.entity;
 
+import com.example.campusfinder.core.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,7 +29,7 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicUpdate
 @Getter
 @Builder
-public class UserEntity {
+public class UserEntity extends BaseEntity {
 
     @Id
     @Column(name="user_seq")
