@@ -51,5 +51,10 @@ public class RedisPhoneVerificationStore {
     private String getRedisKey(String phoneNumber) {
         return "sms:verification:" + phoneNumber;
     }
+
+    // 인증 정보 삭제
+    public void clearVerificationState(String phoneNumber) {
+        redisTemplate.delete(getRedisKey(phoneNumber));
+    }
 }
 

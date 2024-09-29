@@ -43,6 +43,12 @@ public class SmsService {
             throw new IllegalArgumentException("이미 인증된 핸드폰 번호입니다.");
         }
 
+        // 이미 인증된 핸드폰 번호인지 확인
+        if (redisPhoneVerificationStore.isPhoneVerified(request.phoneNum())) {
+            // 회원가입이 완료되지 않은 경우 인증 상태를 초기화
+            redisPhoneVerificationStore.clearVerificationState(request.phoneNum());
+        }
+
         // 새로운 인증 번호 생성 및 저장
         String certificationNumber = generateRandomCode();
         redisPhoneVerificationStore.savePendingState(request.phoneNum(), certificationNumber, EXPIRATION_TIME);
