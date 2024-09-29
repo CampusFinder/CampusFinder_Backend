@@ -19,7 +19,7 @@ public class ProfessorEmailService implements EmailService {
     private final StringRedisTemplate redisTemplate;
     private final EmailSender emailSender;
     private final EmailVerificationRepository emailVerificationRepository;
-    @Value("${univcert.api.key}")
+    @Value("${univcert.api-key}")
     private String univCertApiKey;
 
     @Override

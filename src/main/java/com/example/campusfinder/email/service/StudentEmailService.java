@@ -20,9 +20,8 @@ public class StudentEmailService implements EmailService {
     private final EmailFormatValidator emailFormatValidator;
     private final EmailVerificationRepository emailVerificationRepository;
     private final UnivCertApi univCertApiService;
-    private final EmailSender emailSender;
 
-    @Value("${univcert.api.key}")
+    @Value("${univcert.api-key}")
     private String univCertApiKey;
     private final static long EXPIRATION_TIME = 600L;
 
@@ -38,19 +37,28 @@ public class StudentEmailService implements EmailService {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         }
 
-        // 기존 인증 상태 초기화
-        redisEmailVerificationStore.clearPendingVerification(emailRequest.email());
+        // 기존 인증 상태 확인 및 초기화
+        if (redisEmailVerificationStore.isVerificationCompleted(emailRequest.email())) {
+            univCertApiService.clearCertification(emailRequest.email());
+            redisEmailVerificationStore.clearPendingVerification(emailRequest.email());
+        }
+
+        if (redisEmailVerificationStore.isVerificationPending(emailRequest.email())) {
+            univCertApiService.clearCertification(emailRequest.email());
+            redisEmailVerificationStore.clearPendingVerification(emailRequest.email());
+        }
 
         // UnivCert API를 통해 새로운 인증 요청
-        univCertApiService.requestCertification(emailRequest);
+        try {
+            // UnivCert API 호출 (응답을 따로 인증번호로 처리하지 않고 성공 여부만 확인)
+            univCertApiService.requestCertification(emailRequest);
 
-        // Redis에 PENDING 상태 저장
-        redisEmailVerificationStore.savePendingState(emailRequest.email(), EXPIRATION_TIME);
+            // 인증 요청 성공 시 Redis에 PENDING 상태 저장
+            redisEmailVerificationStore.savePendingState(emailRequest.email(), EXPIRATION_TIME);
 
-        // 이메일 전송
-        String subject = "CampusFinder 학생 인증번호";
-        String text = "안녕하세요, CampusFinder입니다.\n\n" + "학생님의 인증번호가 발송되었습니다. 5분 이내에 인증을 완료해주세요.";
-        emailSender.sendEmail(emailRequest.email(), subject, text);
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("학생 이메일 인증 요청 중 오류가 발생했습니다: " + e.getMessage());
+        }
     }
 
     @Override
