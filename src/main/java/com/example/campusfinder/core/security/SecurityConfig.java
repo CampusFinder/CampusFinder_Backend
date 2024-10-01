@@ -45,6 +45,7 @@ public class SecurityConfig {
                                 "/api/signup/**",
                                 "/api/signin",
                                 "/api/home/**",
+                                "/api/boards/**",
                                 "/api/certification/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session ->
