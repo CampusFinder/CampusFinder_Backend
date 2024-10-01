@@ -34,7 +34,7 @@ public class UserEntity extends BaseEntity {
     @Id
     @Column(name="user_seq")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userSeq;
+    private Long userIdx;
 
     //휴대폰 번호
     @Column(name="phone_number", nullable = false)

@@ -2,14 +2,18 @@ package com.example.campusfinder.user.dto.response;
 
 /**
  * packageName    : com.example.campusfinder.user.dto.response
- * fileName       : UserResponse
+ * fileName       : SignInResponseDto
  * author         : tlswl
- * date           : 2024-08-20
+ * date           : 2024-10-01
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2024-08-20        tlswl       최초 생성
+ * 2024-10-01        tlswl       최초 생성
  */
-public record UserResponse() {
+public record SignInResponseDto(
+        Long userIdx,
+        String accessToken,
+        String refreshToken
+) {
 }

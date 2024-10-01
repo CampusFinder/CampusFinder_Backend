@@ -2,6 +2,7 @@ package com.example.campusfinder.user.controller;
 
 import com.example.campusfinder.core.base.BaseResponse;
 import com.example.campusfinder.user.dto.request.signin.SignInRequestDto;
+import com.example.campusfinder.user.dto.response.SignInResponseDto;
 import com.example.campusfinder.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -53,6 +54,7 @@ public class SignInController {
                                                 "status": 200,
                                                 "message": "성공",
                                                 "data": {
+                                                    "userIdx":1,
                                                     "accessToken": "ACCESS_TOKEN",
                                                     "refreshToken": "REFRESH_TOKEN"
                                                 }
@@ -72,7 +74,8 @@ public class SignInController {
                             implementation = BaseResponse.class)))
     })
     @PostMapping
-    public ResponseEntity<BaseResponse> singIn(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+    public ResponseEntity<BaseResponse<SignInResponseDto>> singIn(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "로그인 요청 데이터",
             required = true,
             content = @Content(
@@ -89,7 +92,7 @@ public class SignInController {
                     schema = @Schema(implementation = SignInRequestDto.class)
             )
     ) @RequestBody SignInRequestDto signInRequestDto){
-        Map<String, String> tokens = userService.signInUser(signInRequestDto);
-        return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(),tokens));
+        SignInResponseDto responseDto = userService.signInUser(signInRequestDto);
+        return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(),responseDto));
     }
 }
