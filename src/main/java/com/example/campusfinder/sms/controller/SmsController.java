@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/certification/sms")
-@Tag(name = "문자 인증 API")
+@Tag(name = "회원가입 API")
 public class SmsController {
 
     private final SmsService smsVerificationService;

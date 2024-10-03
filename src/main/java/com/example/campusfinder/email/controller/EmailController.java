@@ -23,7 +23,7 @@ import java.io.IOException;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/certification/email")
-@Tag(name = "이메일 인증 API")
+@Tag(name = "회원가입 API")
 public class EmailController {
 
     private final EmailServiceFactory emailServiceFactory;
