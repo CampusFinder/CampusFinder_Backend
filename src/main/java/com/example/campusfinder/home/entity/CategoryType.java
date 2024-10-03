@@ -14,7 +14,7 @@ package com.example.campusfinder.home.entity;
 public enum CategoryType {
     DESIGN("디자인"),
     DOCUMENT("문서작성"),
-    PROGRAMMING("개발"),
+    DEV("개발"),
     VIDEO("영상"),
     LANGUAGE("외국어"),
     ETC("기타");
