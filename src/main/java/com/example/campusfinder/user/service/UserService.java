@@ -3,6 +3,7 @@ package com.example.campusfinder.user.service;
 import com.example.campusfinder.core.security.JwtTokenProvider;
 import com.example.campusfinder.user.dto.request.signin.SignInRequestDto;
 import com.example.campusfinder.user.dto.request.signup.SignUpRequestDto;
+import com.example.campusfinder.user.dto.response.SignInResponseDto;
 import com.example.campusfinder.user.entity.UserEntity;
 import com.example.campusfinder.user.repository.UserRepository;
 import com.example.campusfinder.user.utils.UserUtils;
@@ -11,8 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -54,7 +53,7 @@ public class UserService {
     }
 
     //로그인
-    public Map<String, String> signInUser(SignInRequestDto signInRequest){
+    public SignInResponseDto signInUser(SignInRequestDto signInRequest){
         UserEntity user = userRepository.findByPhoneNum(signInRequest.phoneNum())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
@@ -63,18 +62,12 @@ public class UserService {
         }
 
         // 토큰 생성
-        String accessToken = jwtTokenProvider.generateAccessToken(user.getPhoneNum());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getPhoneNum());
-
-        // Refresh Token 저장 (Redis 또는 다른 저장소)
+        String accessToken = jwtTokenProvider.generateAccessToken(user.getUserIdx());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUserIdx());
+        // Refresh Token 저장 (Redis)
         userUtils.saveRefreshToken(user.getPhoneNum(), refreshToken);
 
-        // Access Token과 Refresh Token 반환
-        Map<String, String> tokens = new HashMap<>();
-        tokens.put("accessToken", accessToken);
-        tokens.put("refreshToken", refreshToken);
-
-        return tokens;
+        return new SignInResponseDto(accessToken, refreshToken);
     }
 
     // 닉네임 중복 체크 메서드

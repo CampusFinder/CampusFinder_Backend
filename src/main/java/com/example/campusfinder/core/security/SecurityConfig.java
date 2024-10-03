@@ -39,11 +39,15 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
-                                // Swagger
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api/signup/**",
                                 "/api/signin",
+                                "/api/home/**",
+                                "/api/request-board",
+                                "/api/student-board",
+                                "/api/request-board/**",
+                                "/api/student-board/**",
                                 "/api/certification/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session ->

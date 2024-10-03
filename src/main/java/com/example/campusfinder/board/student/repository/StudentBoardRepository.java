@@ -1,0 +1,32 @@
+package com.example.campusfinder.board.student.repository;
+
+import com.example.campusfinder.board.student.entity.StudentBoard;
+import com.example.campusfinder.home.entity.CategoryType;
+import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
+
+/**
+ * packageName    : com.example.campusfinder.board.request.repository
+ * fileName       : StudentBoardRepository
+ * author         : tlswl
+ * date           : 2024-09-30
+ * description    :
+ * ===========================================================
+ * DATE              AUTHOR             NOTE
+ * -----------------------------------------------------------
+ * 2024-09-30        tlswl       최초 생성
+ */
+public interface StudentBoardRepository extends JpaRepository<StudentBoard, Long> {
+    List<StudentBoard> findAllByCategoryType(CategoryType categoryType); // 카테고리별 학생 게시판 조회
+    List<StudentBoard> findAllByCategoryType(CategoryType categoryType, Sort sort);
+
+    @Modifying
+    @Query("UPDATE StudentBoard sb SET sb.viewCount = sb.viewCount + 1 WHERE sb.boardIdx = :boardIdx")
+    void incrementViewCount(@Param("boardIdx") Long boardIdx);
+
+}

@@ -32,27 +32,27 @@ public class JwtTokenProvider {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
-    private final long accessTokenDuration = 1000L * 60 * 30; //30분
+    private final long accessTokenDuration = 1000L * 60 * 60 * 24 * 7;
     private final long refreshTokenDuration = 1000L * 60 * 60 * 24 * 7;
 
-    public String generateAccessToken(String phone) {
+    public String generateAccessToken(Long userIdx) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + accessTokenDuration);
 
         return Jwts.builder()
-                .setSubject(phone)
+                .setSubject(userIdx.toString()) // userIdx를 Subject로 설정
                 .setIssuedAt(now)
                 .setExpiration(expireDate)
                 .signWith(SignatureAlgorithm.HS512, secretKey)
                 .compact();
     }
 
-    public String generateRefreshToken(String phone) {
+    public String generateRefreshToken(Long userIdx) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + refreshTokenDuration);
 
         return Jwts.builder()
-                .setSubject(phone)
+                .setSubject(userIdx.toString()) // userIdx를 Subject로 설정
                 .setIssuedAt(now)
                 .setExpiration(expireDate)
                 .signWith(SignatureAlgorithm.HS512, secretKey)
@@ -87,9 +87,27 @@ public class JwtTokenProvider {
     }
 
     // JWT에서 사용자 정보 인증
-    public Authentication getAuthentication(String phone) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(phone); // phone을 사용하여 UserDetails 로드
+    public Authentication getAuthentication(String phoneNum) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(phoneNum); // phone을 사용하여 UserDetails 로드
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+    }
+
+    //토큰에서 UserIdx 값 추출
+    public Long getUserIdxFromToken(String token) {
+        return Long.parseLong(Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject());
+    }
+
+    // 토큰에서 nickname 추출
+    public String getNicknameFromToken(String token) {
+        return Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody()
+                .get("nickname", String.class);
     }
 
 }
