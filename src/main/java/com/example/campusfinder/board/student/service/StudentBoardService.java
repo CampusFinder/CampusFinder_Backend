@@ -10,7 +10,6 @@ import com.example.campusfinder.core.util.S3Domain;
 import com.example.campusfinder.home.entity.CategoryType;
 import com.example.campusfinder.user.entity.UserEntity;
 import com.example.campusfinder.user.repository.UserRepository;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -120,14 +119,15 @@ public class StudentBoardService {
 
     @Transactional
     public StudentBoardDto updateStudentBoard(HttpServletRequest request, Long boardIdx, StudentBoardRequestDto requestDto, List<MultipartFile> newImages) throws IOException {
+        // JWT 토큰에서 사용자 ID 추출
         String token = jwtTokenProvider.resolveToken(request);
         Long userIdx = jwtTokenProvider.getUserIdxFromToken(token);
 
-        // 수정할 게시글 조회
+        // 게시글 조회 및 수정 권한 체크
         StudentBoard studentBoard = studentBoardRepository.findById(boardIdx)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
-        // 게시글 작성자가 아닌 경우 예외 처리
+        // 게시글 작성자와 요청 사용자의 일치 여부 확인
         if (!studentBoard.getNickname().equals(userRepository.findById(userIdx)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다.")).getNickname())) {
             throw new IllegalArgumentException("작성자만 게시글을 수정할 수 있습니다.");
@@ -142,8 +142,8 @@ public class StudentBoardService {
                 .content(requestDto.content())
                 .build();
 
-        // 삭제할 이미지 처리 (S3 및 DB에서 삭제)
-        if (requestDto.deletedImageUrls() != null) {
+        // 이미지 삭제 처리 (S3 및 DB에서 삭제)
+        if (requestDto.deletedImageUrls() != null && !requestDto.deletedImageUrls().isEmpty()) {
             List<StudentBoardImage> imagesToDelete = studentBoard.getImages().stream()
                     .filter(image -> requestDto.deletedImageUrls().contains(image.getImageUrl()))
                     .collect(Collectors.toList());
@@ -153,8 +153,14 @@ public class StudentBoardService {
             }
         }
 
-        // 새로운 이미지 추가 (S3 업로드 및 DB 추가)
+        // 기존 이미지 삭제 후 썸네일 이미지 설정 갱신
         String thumbnailImage = studentBoard.getThumbnailImage();
+        if (thumbnailImage == null || (requestDto.deletedImageUrls() != null && requestDto.deletedImageUrls().contains(thumbnailImage))) {
+            // 삭제된 썸네일이라면 새로운 썸네일 이미지 설정
+            thumbnailImage = studentBoard.getImages().isEmpty() ? null : studentBoard.getImages().get(0).getImageUrl();
+        }
+
+        // 새로운 이미지 추가 처리 (S3 업로드 및 DB 추가)
         if (newImages != null && !newImages.isEmpty()) {
             List<String> newImageUrls = newImages.stream()
                     .map(image -> {
@@ -166,6 +172,7 @@ public class StudentBoardService {
                     })
                     .collect(Collectors.toList());
 
+            // 새 이미지 URL을 StudentBoard에 추가
             for (String imageUrl : newImageUrls) {
                 StudentBoardImage boardImage = StudentBoardImage.builder()
                         .imageUrl(imageUrl)
@@ -173,13 +180,16 @@ public class StudentBoardService {
                 studentBoard.addImage(boardImage);
             }
 
-            // 첫 번째 이미지를 썸네일로 설정
-            thumbnailImage = newImageUrls.get(0);
+            // 새 이미지가 추가된 경우 썸네일 이미지 설정 (기존 썸네일이 삭제되었다면 새로 추가한 이미지로 설정)
+            if (thumbnailImage == null || requestDto.deletedImageUrls().contains(thumbnailImage)) {
+                thumbnailImage = newImageUrls.get(0); // 첫 번째 새 이미지로 썸네일 설정
+            }
         }
 
         // 썸네일 이미지 설정
         studentBoard.toBuilder().thumbnailImage(thumbnailImage).build();
 
+        // 수정된 게시글 저장
         studentBoardRepository.save(studentBoard);
 
         return new StudentBoardDto(
