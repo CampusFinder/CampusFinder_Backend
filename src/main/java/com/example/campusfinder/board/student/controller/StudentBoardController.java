@@ -57,10 +57,10 @@ public class StudentBoardController {
                                     name = "학생 찾기 글 작성 예시",
                                     value = """
                                             {
-                                                "categoryType": "PROGRAMMING",
+                                                "categoryType": "DEV",
                                                 "title": "프로그래밍 수업 과제 도움",
                                                 "isNearCampus": true,
-                                                "meetingType": "OFFLINE",
+                                                "meetingType": "NOTTING",
                                                 "content": "프로그래밍 수업 과제 도와주실 분 구합니다.",
                                                 "imageUrls": ["image1.jpg", "image2.jpg"]
                                             }
@@ -87,7 +87,7 @@ public class StudentBoardController {
                                                     "nickname": "student123",
                                                     "thumbnailImage": "image1.jpg",
                                                     "isNearCampus": true,
-                                                    "categoryType": "PROGRAMMING"
+                                                    "categoryType": "DEV"
                                                 }
                                             }
                                             """
@@ -222,7 +222,7 @@ public class StudentBoardController {
                     @Parameter(
                             name = "categoryType",
                             description = "조회할 카테고리 타입",
-                            example = "PROGRAMMING",
+                            example = "DEV",
                             required = true
                     ),
                     @Parameter(
@@ -252,7 +252,7 @@ public class StudentBoardController {
                                                         "nickname": "student123",
                                                         "thumbnailImage": "image1.jpg",
                                                         "isNearCampus": true,
-                                                        "categoryType": "PROGRAMMING"
+                                                        "categoryType": "DEV"
                                                     },
                                                     {
                                                         "boardIdx": 2,
@@ -260,7 +260,7 @@ public class StudentBoardController {
                                                         "nickname": "student456",
                                                         "thumbnailImage": "image2.jpg",
                                                         "isNearCampus": false,
-                                                        "categoryType": "PROGRAMMING"
+                                                        "categoryType": "DEV"
                                                     }
                                                 ]
                                             }

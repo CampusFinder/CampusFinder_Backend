@@ -76,7 +76,7 @@ public class StudentBoardDetailService {
                 studentBoard.getContent(),
                 studentBoard.getViewCount(),  // 조회수 반환
                 studentBoard.getMeetingType(),
-                studentBoard.isNearCampus(),
+                studentBoard.getIsNearCampus(),
                 imageUrls,
                 profileImageUrl,  // 프로필 이미지 URL 포함
                 studentBoard.getNickname()
