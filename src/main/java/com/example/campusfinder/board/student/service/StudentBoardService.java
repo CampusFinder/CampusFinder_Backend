@@ -133,6 +133,11 @@ public class StudentBoardService {
             throw new IllegalArgumentException("작성자만 게시글을 수정할 수 있습니다.");
         }
 
+        // 기존 게시글의 카테고리 변경
+        if (requestDto.categoryType() != null && !requestDto.categoryType().equals(studentBoard.getCategoryType())) {
+            studentBoard.toBuilder().categoryType(requestDto.categoryType()).build();
+        }
+
         // 게시글 정보 수정
         studentBoard.toBuilder()
                 .title(requestDto.title())
