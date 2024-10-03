@@ -2,6 +2,7 @@ package com.example.campusfinder.board.student.repository;
 
 import com.example.campusfinder.board.student.entity.StudentBoard;
 import com.example.campusfinder.home.entity.CategoryType;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -19,4 +20,6 @@ import java.util.List;
  */
 public interface StudentBoardRepository extends JpaRepository<StudentBoard, Long> {
     List<StudentBoard> findAllByCategoryType(CategoryType categoryType); // 카테고리별 학생 게시판 조회
+    List<StudentBoard> findAllByCategoryType(CategoryType categoryType, Sort sort);
+
 }

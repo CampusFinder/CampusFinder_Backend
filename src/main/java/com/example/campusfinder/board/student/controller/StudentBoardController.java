@@ -3,6 +3,7 @@ package com.example.campusfinder.board.student.controller;
 import com.example.campusfinder.board.student.dto.StudentBoardDto;
 import com.example.campusfinder.board.student.dto.StudentBoardRequestDto;
 import com.example.campusfinder.board.student.service.StudentBoardService;
+import com.example.campusfinder.board.student.service.StudentBoardSortService;
 import com.example.campusfinder.core.base.BaseResponse;
 import com.example.campusfinder.home.entity.CategoryType;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,6 +42,7 @@ import java.util.List;
 public class StudentBoardController {
 
     private final StudentBoardService studentBoardService;
+    private final StudentBoardSortService studentBoardSortService;
 
     @Operation(
             summary = "학생 찾기 글 작성",
@@ -210,5 +212,78 @@ public class StudentBoardController {
             @PathVariable Long boardIdx) {
         studentBoardService.deleteStudentBoard(request, boardIdx);
         return ResponseEntity.ok(BaseResponse.ofSuccess(200, null));
+    }
+
+    @Operation(
+            summary = "카테고리와 정렬 방식에 따른 게시글 조회",
+            description = "특정 카테고리의 게시글을 최신순 또는 오래된순으로 정렬하여 조회",
+            parameters = {
+                    @Parameter(
+                            name = "categoryType",
+                            description = "조회할 카테고리 타입",
+                            example = "PROGRAMMING",
+                            required = true
+                    ),
+                    @Parameter(
+                            name = "sortType",
+                            description = "정렬 방식 (\"latest\" - 최신순, \"oldest\" - 오래된순)",
+                            example = "latest",
+                            required = true
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정렬된 게시글 목록 조회 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = BaseResponse.class),
+                            examples = @ExampleObject(
+                                    name = "성공 응답 예시",
+                                    value = """
+                                            {
+                                                "status": 200,
+                                                "message": "성공",
+                                                "data": [
+                                                    {
+                                                        "boardIdx": 1,
+                                                        "title": "프로그래밍 수업 과제 도움",
+                                                        "nickname": "student123",
+                                                        "thumbnailImage": "image1.jpg",
+                                                        "isNearCampus": true,
+                                                        "categoryType": "PROGRAMMING"
+                                                    },
+                                                    {
+                                                        "boardIdx": 2,
+                                                        "title": "웹 개발 프로젝트 팀원 구합니다.",
+                                                        "nickname": "student456",
+                                                        "thumbnailImage": "image2.jpg",
+                                                        "isNearCampus": false,
+                                                        "categoryType": "PROGRAMMING"
+                                                    }
+                                                ]
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "권한 없음",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class))
+            )
+    })
+    @GetMapping("/category/sort")
+    public ResponseEntity<BaseResponse<List<StudentBoardDto>>> getStudentBoardListByCategoryAndSort(
+            @RequestParam CategoryType categoryType,
+            @RequestParam String sortType // 정렬 방식 파라미터 추가
+    ) {
+        List<StudentBoardDto> studentBoardList = studentBoardSortService.getStudentBoardListByCategoryAndSort(categoryType, sortType);
+        return ResponseEntity.ok(BaseResponse.ofSuccess(200, studentBoardList));
     }
 }
