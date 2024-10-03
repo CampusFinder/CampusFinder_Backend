@@ -49,6 +49,12 @@ public class S3Domain {
         s3client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
     }
 
+    public void deleteFile(String imageUrl) {
+        // S3 버킷에서 이미지 삭제
+        String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+        s3client.deleteObject(bucketName, fileName);
+    }
+
     private String getFileUrl(String fileName) {
         return s3client.getUrl(bucketName, fileName).toString();
     }
