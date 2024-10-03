@@ -39,6 +39,7 @@ public class UserUtils {
                 .univName(signUpRequest.univName().univName())
                 .emailVerified(true)
                 .phoneVerified(true)
+                .profileImageUrl(null) // 프로필 이미지 기본값 설정 (NULL)
                 .build();
     }
 

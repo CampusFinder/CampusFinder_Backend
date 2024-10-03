@@ -6,6 +6,7 @@ import com.example.campusfinder.board.student.repository.StudentBoardRepository;
 import com.example.campusfinder.core.security.JwtTokenProvider;
 import com.example.campusfinder.core.util.S3Domain;
 import com.example.campusfinder.user.repository.UserRepository;
+import io.jsonwebtoken.Jwt;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,7 @@ public class StudentBoardDetailService {
 
     private final StudentBoardRepository studentBoardRepository;
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 게시글 상세 조회 로직
@@ -43,17 +45,24 @@ public class StudentBoardDetailService {
      */
     @Transactional
     public StudentBoardDetailDto getStudentBoardDetail(Long boardIdx, Long userIdx) {
-        // 조회수 증가를 위해 직접 쿼리 실행 (동시성 이슈 방지)
-        studentBoardRepository.incrementViewCount(boardIdx);
-
         // 게시글 조회
         StudentBoard studentBoard = studentBoardRepository.findById(boardIdx)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
 
-        // 작성자인지 확인
-        boolean isOwner = studentBoard.getNickname().equals(userRepository.findById(userIdx)
-                .map(UserEntity::getNickname)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다.")));
+        // 조회수 증가
+        studentBoardRepository.incrementViewCount(boardIdx);
+
+        // 유효하지 않은 사용자에 대한 예외 처리
+        UserEntity user = userRepository.findById(userIdx)
+                .orElseThrow(() -> new IllegalArgumentException("권한이 없습니다."));
+
+        // 작성자가 아닌 경우 예외 처리
+        if (!studentBoard.getNickname().equals(user.getNickname())) {
+            throw new IllegalArgumentException("권한이 없습니다.");
+        }
+
+        // 사용자 프로필 이미지 URL 가져오기
+        String profileImageUrl = user.getProfileImageUrl(); // 프로필 이미지 URL 추출
 
         // 게시글에 등록된 이미지 URL 목록 추출
         List<String> imageUrls = studentBoard.getImages().stream()
@@ -69,6 +78,7 @@ public class StudentBoardDetailService {
                 studentBoard.getMeetingType(),
                 studentBoard.isNearCampus(),
                 imageUrls,
+                profileImageUrl,  // 프로필 이미지 URL 포함
                 studentBoard.getNickname()
         );
     }

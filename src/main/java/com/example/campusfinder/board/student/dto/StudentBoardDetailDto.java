@@ -23,6 +23,9 @@ public record StudentBoardDetailDto(
         MeetingType meetingType,
         boolean isNearCampus,
         List<String> imageUrls,
-        String nickname
+
+        String nickname,
+        String profileImageUrl
+
 ) {
 }

@@ -65,6 +65,10 @@ public class UserEntity extends BaseEntity {
     @Column(name="phone_verified", nullable = false)
     private boolean phoneVerified=false;
 
+    // 기본적으로 NULL 값을 가질 수 있는 프로필 이미지 URL 필드 추가
+    @Column(name = "profile_image_url", nullable = true)
+    private String profileImageUrl;
+
     //이메일 인증 성공 시 호출
     public void verifyEmail(){
         this.emailVerified=true;
