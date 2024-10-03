@@ -96,10 +96,10 @@ public class StudentBoardDetailController {
             @PathVariable Long boardIdx,
             HttpServletRequest request
     ) {
+        // JWT 토큰에서 사용자 ID 추출
         String token = jwtTokenProvider.resolveToken(request);
         Long userIdx = jwtTokenProvider.getUserIdxFromToken(token);
-
-        StudentBoardDetailDto studentBoardDetail = studentBoardDetailService.getStudentBoardDetail(boardIdx, userIdx);
+        StudentBoardDetailDto studentBoardDetail = studentBoardDetailService.getStudentBoardDetail(boardIdx, request);
         return ResponseEntity.ok(BaseResponse.ofSuccess(200, studentBoardDetail));
     }
 }

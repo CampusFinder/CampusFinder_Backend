@@ -72,8 +72,6 @@ public class StudentBoard extends BaseEntity {
         this.images.add(image);
         image.setStudentBoard(this);
     }
-
-    // 조회수 증가 메서드
     // 조회수 증가 메서드
     public void incrementViewCount() {
         this.viewCount += 1;

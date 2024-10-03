@@ -66,6 +66,13 @@ public class RequestBoard extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private MeetingType meetingType;
 
+    @Column(name = "view_count")
+    private int viewCount = 0; // 조회수 초기값을 0으로 설정
+
+    public void incrementViewCount() {
+        this.viewCount += 1;
+    }
+
     // 이미지 목록 추가
     @OneToMany(mappedBy = "requestBoard", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RequestBoardImage> images = new ArrayList<>();

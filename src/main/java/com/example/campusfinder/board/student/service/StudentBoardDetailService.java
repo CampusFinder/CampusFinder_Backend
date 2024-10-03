@@ -4,9 +4,8 @@ import com.example.campusfinder.board.student.dto.StudentBoardDetailDto;
 import com.example.campusfinder.board.student.entity.StudentBoard;
 import com.example.campusfinder.board.student.repository.StudentBoardRepository;
 import com.example.campusfinder.core.security.JwtTokenProvider;
-import com.example.campusfinder.core.util.S3Domain;
 import com.example.campusfinder.user.repository.UserRepository;
-import io.jsonwebtoken.Jwt;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,36 +39,32 @@ public class StudentBoardDetailService {
     /**
      * 게시글 상세 조회 로직
      * @param boardIdx 게시글 ID
-     * @param userIdx 현재 로그인된 사용자의 ID
+     * @param request HttpServletRequest 객체를 통해 토큰 정보 추출
      * @return 게시글 상세 정보
      */
-    @Transactional
-    public StudentBoardDetailDto getStudentBoardDetail(Long boardIdx, Long userIdx) {
-        // 게시글 조회
+    public StudentBoardDetailDto getStudentBoardDetail(Long boardIdx, HttpServletRequest request) {
+        // JWT 토큰에서 사용자 ID 추출
+        String token = jwtTokenProvider.resolveToken(request);
+        Long userIdx = jwtTokenProvider.getUserIdxFromToken(token);
+
+        // 게시글 조회 및 유효성 검사
         StudentBoard studentBoard = studentBoardRepository.findById(boardIdx)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
 
-        // 조회수 증가
-        studentBoardRepository.incrementViewCount(boardIdx);
-
-        // 유효하지 않은 사용자에 대한 예외 처리
+        // 작성자 정보 조회
         UserEntity user = userRepository.findById(userIdx)
                 .orElseThrow(() -> new IllegalArgumentException("권한이 없습니다."));
 
-        // 작성자가 아닌 경우 예외 처리
-        if (!studentBoard.getNickname().equals(user.getNickname())) {
-            throw new IllegalArgumentException("권한이 없습니다.");
-        }
-
-        // 사용자 프로필 이미지 URL 가져오기
-        String profileImageUrl = user.getProfileImageUrl(); // 프로필 이미지 URL 추출
+        // 조회수 증가
+        studentBoard.incrementViewCount(); // 조회수 증가
+        studentBoardRepository.save(studentBoard);
 
         // 게시글에 등록된 이미지 URL 목록 추출
         List<String> imageUrls = studentBoard.getImages().stream()
                 .map(StudentBoardImage::getImageUrl)
                 .toList();
 
-        // 게시글 상세 정보를 반환
+        // 게시글 상세 정보 생성 및 반환
         return new StudentBoardDetailDto(
                 studentBoard.getBoardIdx(),
                 studentBoard.getTitle(),
@@ -78,9 +73,8 @@ public class StudentBoardDetailService {
                 studentBoard.getMeetingType(),
                 studentBoard.getIsNearCampus(),
                 imageUrls,
-                profileImageUrl,  // 프로필 이미지 URL 포함
+                user.getProfileImageUrl(), // 프로필 이미지 URL 포함
                 studentBoard.getNickname()
         );
     }
 }
-

@@ -2,10 +2,7 @@ package com.example.campusfinder.board.student.service;
 
 import com.example.campusfinder.board.student.dto.StudentBoardDto;
 import com.example.campusfinder.board.student.repository.StudentBoardRepository;
-import com.example.campusfinder.core.security.JwtTokenProvider;
-import com.example.campusfinder.core.util.S3Domain;
 import com.example.campusfinder.home.entity.CategoryType;
-import com.example.campusfinder.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;

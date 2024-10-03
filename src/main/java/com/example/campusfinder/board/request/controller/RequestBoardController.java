@@ -295,4 +295,6 @@ public class RequestBoardController {
         requestBoardService.deleteRequestBoard(boardIdx, request);
         return ResponseEntity.ok(BaseResponse.ofSuccess(200, null));
     }
+
+
 }
