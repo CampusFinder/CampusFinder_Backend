@@ -4,6 +4,7 @@ import com.example.campusfinder.board.student.dto.StudentBoardDto;
 import com.example.campusfinder.board.student.dto.StudentBoardRequestDto;
 import com.example.campusfinder.board.student.entity.StudentBoard;
 import com.example.campusfinder.board.student.entity.StudentBoardImage;
+import com.example.campusfinder.board.student.repository.StudentBoardImageRepository;
 import com.example.campusfinder.board.student.repository.StudentBoardRepository;
 import com.example.campusfinder.core.security.JwtTokenProvider;
 import com.example.campusfinder.core.util.S3Domain;
@@ -14,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 public class StudentBoardService {
 
     private final StudentBoardRepository studentBoardRepository;
+    private final StudentBoardImageRepository studentBoardImageRepository;
     private final UserRepository userRepository;
     private final S3Domain s3Domain;
     private final JwtTokenProvider jwtTokenProvider;
@@ -48,9 +49,12 @@ public class StudentBoardService {
         String nickname = user.getNickname(); // 사용자 엔티티에서 닉네임 추출
 
         // S3에 이미지 업로드 및 썸네일 이미지 설정
+        List<String> imageUrls = new ArrayList<>(); // 이미지 URL 리스트 초기화
         String thumbnailImage = null;
-        if (studentBoardRequestDto.images() != null && !studentBoardRequestDto.images().isEmpty()) {
-            List<String> imageUrls = studentBoardRequestDto.images().stream()
+
+        if (studentBoardRequestDto.uploadImages() != null && !studentBoardRequestDto.uploadImages().isEmpty()) {
+            // S3에 이미지 업로드 및 URL 리스트 생성
+            imageUrls = studentBoardRequestDto.uploadImages().stream()
                     .map(image -> {
                         try {
                             return s3Domain.uploadMultipartFile(image);
@@ -75,9 +79,21 @@ public class StudentBoardService {
                 .content(studentBoardRequestDto.content())
                 .build();
 
-        // StudentBoard 엔티티 저장
+        // StudentBoard 엔티티 저장 (먼저 게시글 저장)
         studentBoardRepository.save(studentBoard);
 
+        // StudentBoardImage 엔티티 생성 및 개별 저장
+        if (imageUrls != null && !imageUrls.isEmpty()) {
+            for (String imageUrl : imageUrls) {
+                StudentBoardImage studentBoardImage = StudentBoardImage.builder()
+                        .imageUrl(imageUrl)
+                        .studentBoard(studentBoard) // studentBoard와 연관 관계 설정
+                        .build();
+                studentBoardImageRepository.save(studentBoardImage); // 별도의 repository를 사용하여 저장
+            }
+        }
+
+        // DTO 반환
         return new StudentBoardDto(
                 studentBoard.getBoardIdx(),
                 studentBoard.getTitle(),
@@ -87,6 +103,7 @@ public class StudentBoardService {
                 studentBoard.getCategoryType()
         );
     }
+
 
 
     @Transactional(readOnly = true)
@@ -155,8 +172,8 @@ public class StudentBoardService {
 
         // 새로운 이미지 추가 처리 (S3 업로드 및 DB 추가)
         List<String> newImageUrls = new ArrayList<>();
-        if (requestDto.images() != null && !requestDto.images().isEmpty()) {
-            newImageUrls = requestDto.images().stream()
+        if (requestDto.uploadImages() != null && !requestDto.uploadImages().isEmpty()) {
+            newImageUrls = requestDto.uploadImages().stream()
                     .map(image -> {
                         try {
                             return s3Domain.uploadMultipartFile(image);

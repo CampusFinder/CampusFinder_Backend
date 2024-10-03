@@ -4,6 +4,7 @@ import com.example.campusfinder.board.request.dto.request.RequestBoardRequestDto
 import com.example.campusfinder.board.request.dto.response.RequestBoardDto;
 import com.example.campusfinder.board.request.entity.RequestBoard;
 import com.example.campusfinder.board.request.entity.RequestBoardImage;
+import com.example.campusfinder.board.request.repository.RequestBoardImageRepository;
 import com.example.campusfinder.board.request.repository.RequestBoardRepository;
 import com.example.campusfinder.core.security.JwtTokenProvider;
 import com.example.campusfinder.core.util.S3Domain;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 public class RequestBoardService {
 
     private final RequestBoardRepository requestBoardRepository;
+    private final RequestBoardImageRepository requestBoardImageRepository;
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final S3Domain s3Domain;
@@ -58,10 +60,13 @@ public class RequestBoardService {
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
         String nickname = user.getNickname();
 
-        // S3에 이미지 업로드 및 썸네일 이미지 설정
+        // S3에 이미지 업로드 및 URL 리스트 생성
+        List<String> imageUrls = new ArrayList<>();
         String thumbnailImage = null;
-        if (requestDto.images() != null && !requestDto.images().isEmpty()) {
-            List<String> imageUrls = requestDto.images().stream()
+
+        // MultipartFile 이미지를 S3에 업로드하고 URL을 리스트에 저장
+        if (requestDto.uploadImages() != null && !requestDto.uploadImages().isEmpty()) {
+            imageUrls = requestDto.uploadImages().stream()
                     .map(image -> {
                         try {
                             return s3Domain.uploadMultipartFile(image);
@@ -72,10 +77,10 @@ public class RequestBoardService {
                     .collect(Collectors.toList());
 
             // 첫 번째 이미지를 썸네일로 설정
-            thumbnailImage = imageUrls.get(0);
+            thumbnailImage = imageUrls.isEmpty() ? null : imageUrls.get(0);
         }
 
-        // RequestBoard 엔티티 생성
+        // RequestBoard 엔티티 생성 및 저장
         RequestBoard requestBoard = RequestBoard.builder()
                 .title(requestDto.title())
                 .content(requestDto.content())
@@ -89,10 +94,22 @@ public class RequestBoardService {
                 .categoryType(requestDto.categoryType())
                 .build();
 
-        // 저장
+        // RequestBoard 엔티티 먼저 저장
         requestBoardRepository.save(requestBoard);
 
-        // 반환 DTO 생성
+        // RequestBoardImage 엔티티 생성 및 저장 (별도의 Repository 사용)
+        if (imageUrls != null && !imageUrls.isEmpty()) {
+            for (String imageUrl : imageUrls) {
+                RequestBoardImage requestBoardImage = RequestBoardImage.builder()
+                        .imageUrl(imageUrl)
+                        .requestBoard(requestBoard) // 연관관계 설정
+                        .build();
+                // RequestBoardImage 엔티티 저장
+                requestBoardImageRepository.save(requestBoardImage);
+            }
+        }
+
+        // 저장된 RequestBoard를 기반으로 DTO 생성 및 반환
         return new RequestBoardDto(
                 requestBoard.getBoardIdx(),
                 requestBoard.getTitle(),
@@ -180,8 +197,8 @@ public class RequestBoardService {
 
         // 새로운 이미지 추가 처리
         List<String> newImageUrls = new ArrayList<>();
-        if (requestBoardDto.images() != null && !requestBoardDto.images().isEmpty()) {
-            newImageUrls = requestBoardDto.images().stream()
+        if (requestBoardDto.uploadImages() != null && !requestBoardDto.uploadImages().isEmpty()) {
+            newImageUrls = requestBoardDto.uploadImages().stream()
                     .map(image -> {
                         try {
                             return s3Domain.uploadMultipartFile(image);

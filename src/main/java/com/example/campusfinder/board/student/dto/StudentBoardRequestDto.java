@@ -24,7 +24,7 @@ public record StudentBoardRequestDto(
         MeetingType meetingType,
         String content,
         List<String> imageUrls,
-        List<MultipartFile> images, // 새롭게 추가할 이미지 리스트
+        List<MultipartFile> uploadImages, // 새롭게 추가할 이미지 리스트
         List<String> deletedImageUrls // 삭제할 이미지 URL 목록 (추가)
 
 ) {

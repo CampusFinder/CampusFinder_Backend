@@ -27,7 +27,7 @@ public record RequestBoardRequestDto(
         MeetingType meetingType,
         Boolean isUrgent,
         String content,
-        List<MultipartFile> images, // 이미지 리스트 (최대 6장)
+        List<MultipartFile> uploadImages, // 이미지 리스트 (최대 6장)
         List<String> deletedImageUrls, // 삭제할 이미지 URL 리스트
         List<String> imageUrls // 기존 이미지 URL 목록
 
