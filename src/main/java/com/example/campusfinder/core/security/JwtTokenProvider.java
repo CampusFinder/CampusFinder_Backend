@@ -35,28 +35,24 @@ public class JwtTokenProvider {
     private final long accessTokenDuration = 1000L * 60 * 30; //30분
     private final long refreshTokenDuration = 1000L * 60 * 60 * 24 * 7;
 
-    public String generateAccessToken(Long userIdx, String phoneNum, String nickname) {
+    public String generateAccessToken(Long userIdx) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + accessTokenDuration);
 
         return Jwts.builder()
-                .setSubject(phoneNum)
-                .claim("userIdx", userIdx)
-                .claim("nickname",nickname)
+                .setSubject(userIdx.toString()) // userIdx를 Subject로 설정
                 .setIssuedAt(now)
                 .setExpiration(expireDate)
                 .signWith(SignatureAlgorithm.HS512, secretKey)
                 .compact();
     }
 
-    public String generateRefreshToken(Long userIdx, String phoneNum, String nickname) {
+    public String generateRefreshToken(Long userIdx) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + refreshTokenDuration);
 
         return Jwts.builder()
-                .setSubject(phoneNum)
-                .claim("userIdx", userIdx)
-                .claim("nickname", nickname)
+                .setSubject(userIdx.toString()) // userIdx를 Subject로 설정
                 .setIssuedAt(now)
                 .setExpiration(expireDate)
                 .signWith(SignatureAlgorithm.HS512, secretKey)
@@ -97,12 +93,12 @@ public class JwtTokenProvider {
     }
 
     //토큰에서 UserIdx 값 추출
-    public Long getUserIdxFromToken(String token){
-        return Jwts.parser()
+    public Long getUserIdxFromToken(String token) {
+        return Long.parseLong(Jwts.parser()
                 .setSigningKey(secretKey)
                 .parseClaimsJws(token)
                 .getBody()
-                .get("userIdx",Long.class);
+                .getSubject());
     }
 
     // 토큰에서 nickname 추출
