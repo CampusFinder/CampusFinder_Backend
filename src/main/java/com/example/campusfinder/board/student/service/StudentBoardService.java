@@ -31,27 +31,26 @@ public class StudentBoardService {
     private final S3Domain s3Domain;
     private final JwtTokenProvider jwtTokenProvider;
 
+    /**
+     * 게시글 생성 메서드
+     */
     @Transactional
-    public StudentBoardDto createStudentBoard(HttpServletRequest request, StudentBoardRequestDto studentBoardRequestDto, List<MultipartFile> images) throws IOException {
+    public StudentBoardDto createStudentBoard(HttpServletRequest request, StudentBoardRequestDto studentBoardRequestDto) throws IOException {
         // HttpServletRequest에서 토큰 추출
         String token = jwtTokenProvider.resolveToken(request);
 
         // 토큰에서 userIdx 추출
         Long userIdx = jwtTokenProvider.getUserIdxFromToken(token);
 
-
         // UserEntity에서 닉네임을 가져옴
         UserEntity user = userRepository.findById(userIdx)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
-
         String nickname = user.getNickname(); // 사용자 엔티티에서 닉네임 추출
 
-        // S3에 이미지 업로드 및 StudentBoardImage 엔티티 생성
-        List<StudentBoardImage> imageEntities = new ArrayList<>();
+        // S3에 이미지 업로드 및 썸네일 이미지 설정
         String thumbnailImage = null;
-
-        if (images != null && !images.isEmpty()) {
-            List<String> imageUrls = images.stream()
+        if (studentBoardRequestDto.images() != null && !studentBoardRequestDto.images().isEmpty()) {
+            List<String> imageUrls = studentBoardRequestDto.images().stream()
                     .map(image -> {
                         try {
                             return s3Domain.uploadMultipartFile(image);
@@ -61,14 +60,6 @@ public class StudentBoardService {
                     })
                     .collect(Collectors.toList());
 
-            // StudentBoardImage 엔티티 생성 및 추가
-            for (String imageUrl : imageUrls) {
-                StudentBoardImage boardImage = StudentBoardImage.builder()
-                        .imageUrl(imageUrl)
-                        .build();
-                imageEntities.add(boardImage);
-            }
-
             // 첫 번째 이미지를 썸네일로 설정
             thumbnailImage = imageUrls.get(0);
         }
@@ -77,18 +68,14 @@ public class StudentBoardService {
         StudentBoard studentBoard = StudentBoard.builder()
                 .title(studentBoardRequestDto.title())
                 .nickname(nickname) // 조회한 사용자의 닉네임을 사용
-                .thumbnailImage(thumbnailImage)
+                .thumbnailImage(thumbnailImage) // 썸네일 이미지 설정
                 .isNearCampus(studentBoardRequestDto.isNearCampus())
                 .categoryType(studentBoardRequestDto.categoryType())
                 .meetingType(studentBoardRequestDto.meetingType())
                 .content(studentBoardRequestDto.content())
                 .build();
 
-        // 이미지 엔티티를 StudentBoard에 추가
-        for (StudentBoardImage image : imageEntities) {
-            studentBoard.addImage(image);
-        }
-
+        // StudentBoard 엔티티 저장
         studentBoardRepository.save(studentBoard);
 
         return new StudentBoardDto(

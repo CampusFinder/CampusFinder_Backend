@@ -110,7 +110,7 @@ public class RequestBoardController {
     @PostMapping
     public ResponseEntity<BaseResponse<RequestBoardDto>> createRequestBoard(
             HttpServletRequest request,
-            @RequestBody RequestBoardRequestDto requestDto
+            @ModelAttribute RequestBoardRequestDto requestDto
     ) throws IOException {
         RequestBoardDto createdBoard = requestBoardService.createRequestBoard(request, requestDto);
         return ResponseEntity.ok(BaseResponse.ofSuccess(201, createdBoard));

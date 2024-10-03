@@ -1,5 +1,6 @@
 package com.example.campusfinder.board.student.controller;
 
+import com.example.campusfinder.board.request.dto.request.RequestBoardRequestDto;
 import com.example.campusfinder.board.student.dto.StudentBoardDto;
 import com.example.campusfinder.board.student.dto.StudentBoardRequestDto;
 import com.example.campusfinder.board.student.service.StudentBoardService;
@@ -108,11 +109,9 @@ public class StudentBoardController {
     @PostMapping
     public ResponseEntity<BaseResponse<StudentBoardDto>> createStudentBoard(
             HttpServletRequest request,
-            @RequestPart StudentBoardRequestDto requestDto,
-            @RequestPart(required = false) List<MultipartFile> images
-    ) throws IOException
-    {
-        StudentBoardDto createdBoard = studentBoardService.createStudentBoard(request, requestDto, images);
+            @ModelAttribute StudentBoardRequestDto requestDto
+    ) throws IOException {
+        StudentBoardDto createdBoard = studentBoardService.createStudentBoard(request, requestDto);
         return ResponseEntity.ok(BaseResponse.ofSuccess(201, createdBoard));
     }
 
