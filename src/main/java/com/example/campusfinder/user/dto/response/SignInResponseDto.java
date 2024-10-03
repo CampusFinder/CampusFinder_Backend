@@ -12,7 +12,6 @@ package com.example.campusfinder.user.dto.response;
  * 2024-10-01        tlswl       최초 생성
  */
 public record SignInResponseDto(
-        Long userIdx,
         String accessToken,
         String refreshToken
 ) {

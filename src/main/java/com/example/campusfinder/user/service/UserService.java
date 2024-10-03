@@ -69,7 +69,7 @@ public class UserService {
         // Refresh Token 저장 (Redis 또는 다른 저장소)
         userUtils.saveRefreshToken(user.getPhoneNum(), refreshToken);
 
-        return new SignInResponseDto(user.getUserIdx(), accessToken, refreshToken);
+        return new SignInResponseDto(accessToken, refreshToken);
     }
 
     // 닉네임 중복 체크 메서드
