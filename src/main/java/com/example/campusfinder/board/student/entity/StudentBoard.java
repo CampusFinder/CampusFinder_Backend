@@ -61,6 +61,9 @@ public class StudentBoard extends BaseEntity {
     @Column(name="content",nullable = false)
     private String content;
 
+    @Column(name = "view_count", nullable = false)
+    private int viewCount=0; // 조회수 필드 추가
+
     @OneToMany(mappedBy = "studentBoard", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StudentBoardImage> images = new ArrayList<>();
 
@@ -68,6 +71,12 @@ public class StudentBoard extends BaseEntity {
     public void addImage(StudentBoardImage image) {
         this.images.add(image);
         image.setStudentBoard(this);
+    }
+
+    // 조회수 증가 메서드
+    // 조회수 증가 메서드
+    public void incrementViewCount() {
+        this.viewCount += 1;
     }
 
 }
