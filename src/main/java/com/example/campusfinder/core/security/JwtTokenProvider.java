@@ -32,7 +32,7 @@ public class JwtTokenProvider {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
-    private final long accessTokenDuration = 1000L * 60 * 30; //30분
+    private final long accessTokenDuration = 1000L * 60 * 60 * 24 * 7;
     private final long refreshTokenDuration = 1000L * 60 * 60 * 24 * 7;
 
     public String generateAccessToken(Long userIdx) {
