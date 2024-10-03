@@ -12,8 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -64,9 +62,9 @@ public class UserService {
         }
 
         // 토큰 생성
-        String accessToken = jwtTokenProvider.generateAccessToken(user.getPhoneNum());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getPhoneNum());
-        // Refresh Token 저장 (Redis 또는 다른 저장소)
+        String accessToken = jwtTokenProvider.generateAccessToken(user.getUserIdx());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUserIdx());
+        // Refresh Token 저장 (Redis)
         userUtils.saveRefreshToken(user.getPhoneNum(), refreshToken);
 
         return new SignInResponseDto(accessToken, refreshToken);

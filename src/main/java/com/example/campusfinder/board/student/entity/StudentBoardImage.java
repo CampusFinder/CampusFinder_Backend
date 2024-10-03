@@ -20,7 +20,7 @@ import org.hibernate.annotations.DynamicUpdate;
  * 2024-10-01        tlswl       최초 생성
  */
 @Entity
-@Table(name = "STUDENT_BOARD_IMAGE")
+@Table(name = "student_board_image")
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicInsert

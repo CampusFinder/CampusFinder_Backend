@@ -22,6 +22,8 @@ public record StudentBoardRequestDto(
         boolean isNearCampus,
         MeetingType meetingType,
         String content,
-        List<String> imageUrls
+        List<String> imageUrls,
+        List<String> deletedImageUrls // 삭제할 이미지 URL 목록 (추가)
+
 ) {
 }

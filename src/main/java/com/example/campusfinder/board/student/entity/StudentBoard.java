@@ -61,7 +61,7 @@ public class StudentBoard extends BaseEntity {
     @Column(name="content",nullable = false)
     private String content;
 
-    @OneToMany(mappedBy = "studentboard", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "studentBoard", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StudentBoardImage> images = new ArrayList<>();
 
     // 이미지 추가 메서드
