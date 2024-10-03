@@ -12,6 +12,8 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * packageName    : com.example.campusfinder.board.Entity
@@ -50,17 +52,33 @@ public class RequestBoard extends BaseEntity {
     private String nickname;
 
     private String thumbnailImage;
-    private boolean isUrgent;
+    private Boolean isUrgent;
 
     private int money;
     @Column(name = "deadline")
     private LocalDate deadline; // 마감 기한
 
-    private boolean isNegotiable; // 합의가능
+    private Boolean isNegotiable; // 합의가능
 
     @Enumerated(EnumType.STRING)
     private CategoryType categoryType;
 
     @Enumerated(EnumType.STRING)
     private MeetingType meetingType;
+
+    // 이미지 목록 추가
+    @OneToMany(mappedBy = "requestBoard", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RequestBoardImage> images = new ArrayList<>();
+
+    // 이미지를 추가하는 메서드
+    public void addImage(RequestBoardImage image) {
+        images.add(image);
+        image.setRequestBoard(this);
+    }
+
+    // 이미지를 삭제하는 메서드
+    public void removeImage(RequestBoardImage image) {
+        images.remove(image);
+        image.setRequestBoard(null);
+    }
 }

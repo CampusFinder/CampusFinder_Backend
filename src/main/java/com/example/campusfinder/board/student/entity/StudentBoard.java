@@ -49,7 +49,7 @@ public class StudentBoard extends BaseEntity {
     private String thumbnailImage;
 
     //true면 주변 근처 o, false면 주변 근처 x
-    private boolean isNearCampus;
+    private Boolean isNearCampus;
 
     @Enumerated(EnumType.STRING)
     private MeetingType meetingType;

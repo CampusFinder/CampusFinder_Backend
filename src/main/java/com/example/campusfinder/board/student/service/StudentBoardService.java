@@ -96,29 +96,36 @@ public class StudentBoardService {
                 studentBoard.getTitle(),
                 studentBoard.getNickname(),
                 studentBoard.getThumbnailImage(),
-                studentBoard.isNearCampus(),
+                studentBoard.getIsNearCampus(),
                 studentBoard.getCategoryType()
         );
     }
 
 
-    // 학생 찾기 글 조회 로직
     @Transactional(readOnly = true)
-    public List<StudentBoardDto> getStudentBoardListByCategory(CategoryType categoryType) {
-        return studentBoardRepository.findAllByCategoryType(categoryType).stream()
+    public List<StudentBoardDto> getStudentBoardListByCategoryOrAll(CategoryType categoryType) {
+        List<StudentBoard> boards;
+        if (categoryType != null) {
+            // 카테고리별 조회
+            boards = studentBoardRepository.findAllByCategoryType(categoryType);
+        } else {
+            // 전체 게시글 조회
+            boards = studentBoardRepository.findAll();
+        }
+        return boards.stream()
                 .map(studentBoard -> new StudentBoardDto(
                         studentBoard.getBoardIdx(),
                         studentBoard.getTitle(),
                         studentBoard.getNickname(),
                         studentBoard.getThumbnailImage(),
-                        studentBoard.isNearCampus(),
+                        studentBoard.getIsNearCampus(),
                         studentBoard.getCategoryType()
                 ))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Transactional
-    public StudentBoardDto updateStudentBoard(HttpServletRequest request, Long boardIdx, StudentBoardRequestDto requestDto, List<MultipartFile> newImages) throws IOException {
+    public StudentBoardDto updateStudentBoard(HttpServletRequest request, Long boardIdx, StudentBoardRequestDto requestDto) throws IOException {
         // JWT 토큰에서 사용자 ID 추출
         String token = jwtTokenProvider.resolveToken(request);
         Long userIdx = jwtTokenProvider.getUserIdxFromToken(token);
@@ -133,21 +140,21 @@ public class StudentBoardService {
             throw new IllegalArgumentException("작성자만 게시글을 수정할 수 있습니다.");
         }
 
-        // 기존 게시글의 카테고리 변경
-        if (requestDto.categoryType() != null && !requestDto.categoryType().equals(studentBoard.getCategoryType())) {
-            studentBoard.toBuilder().categoryType(requestDto.categoryType()).build();
-        }
+        // 수정할 데이터 적용 (Boolean 타입을 사용하여 null 체크 및 값 대입)
+        Boolean isNearCampus = requestDto.isNearCampus(); // null 가능 Boolean 객체로 설정
 
-        // 게시글 정보 수정
-        studentBoard.toBuilder()
-                .title(requestDto.title())
-                .isNearCampus(requestDto.isNearCampus())
-                .categoryType(requestDto.categoryType())
-                .meetingType(requestDto.meetingType())
-                .content(requestDto.content())
+        studentBoard = studentBoard.toBuilder()
+                .title(requestDto.title() != null ? requestDto.title() : studentBoard.getTitle())
+                .isNearCampus(isNearCampus != null ? isNearCampus : studentBoard.getIsNearCampus()) // Boolean 값 확인 후 적용
+                .categoryType(requestDto.categoryType() != null ? requestDto.categoryType() : studentBoard.getCategoryType())
+                .meetingType(requestDto.meetingType() != null ? requestDto.meetingType() : studentBoard.getMeetingType())
+                .content(requestDto.content() != null ? requestDto.content() : studentBoard.getContent())
                 .build();
 
-        // 이미지 삭제 처리 (S3 및 DB에서 삭제)
+        // 기존 이미지 관리 로직
+        List<String> existingImageUrls = requestDto.imageUrls() != null ? new ArrayList<>(requestDto.imageUrls()) : new ArrayList<>();
+
+        // 삭제할 이미지 URL 리스트가 전달되었을 경우 삭제 처리
         if (requestDto.deletedImageUrls() != null && !requestDto.deletedImageUrls().isEmpty()) {
             List<StudentBoardImage> imagesToDelete = studentBoard.getImages().stream()
                     .filter(image -> requestDto.deletedImageUrls().contains(image.getImageUrl()))
@@ -155,19 +162,14 @@ public class StudentBoardService {
             for (StudentBoardImage image : imagesToDelete) {
                 s3Domain.deleteFile(image.getImageUrl()); // S3에서 이미지 삭제
                 studentBoard.getImages().remove(image); // DB에서 이미지 엔티티 삭제
+                existingImageUrls.remove(image.getImageUrl()); // 기존 이미지 목록에서도 삭제
             }
         }
 
-        // 기존 이미지 삭제 후 썸네일 이미지 설정 갱신
-        String thumbnailImage = studentBoard.getThumbnailImage();
-        if (thumbnailImage == null || (requestDto.deletedImageUrls() != null && requestDto.deletedImageUrls().contains(thumbnailImage))) {
-            // 삭제된 썸네일이라면 새로운 썸네일 이미지 설정
-            thumbnailImage = studentBoard.getImages().isEmpty() ? null : studentBoard.getImages().get(0).getImageUrl();
-        }
-
         // 새로운 이미지 추가 처리 (S3 업로드 및 DB 추가)
-        if (newImages != null && !newImages.isEmpty()) {
-            List<String> newImageUrls = newImages.stream()
+        List<String> newImageUrls = new ArrayList<>();
+        if (requestDto.images() != null && !requestDto.images().isEmpty()) {
+            newImageUrls = requestDto.images().stream()
                     .map(image -> {
                         try {
                             return s3Domain.uploadMultipartFile(image);
@@ -176,36 +178,34 @@ public class StudentBoardService {
                         }
                     })
                     .collect(Collectors.toList());
-
-            // 새 이미지 URL을 StudentBoard에 추가
-            for (String imageUrl : newImageUrls) {
-                StudentBoardImage boardImage = StudentBoardImage.builder()
-                        .imageUrl(imageUrl)
-                        .build();
-                studentBoard.addImage(boardImage);
-            }
-
-            // 새 이미지가 추가된 경우 썸네일 이미지 설정 (기존 썸네일이 삭제되었다면 새로 추가한 이미지로 설정)
-            if (thumbnailImage == null || requestDto.deletedImageUrls().contains(thumbnailImage)) {
-                thumbnailImage = newImageUrls.get(0); // 첫 번째 새 이미지로 썸네일 설정
-            }
+            existingImageUrls.addAll(newImageUrls);
         }
 
-        // 썸네일 이미지 설정
-        studentBoard.toBuilder().thumbnailImage(thumbnailImage).build();
+        // 썸네일 이미지 설정: 기존 썸네일 이미지가 삭제되었거나 없을 경우 새 이미지로 설정
+        String thumbnailImage = studentBoard.getThumbnailImage();
+        if (thumbnailImage == null || (requestDto.deletedImageUrls() != null && requestDto.deletedImageUrls().contains(thumbnailImage))) {
+            thumbnailImage = !existingImageUrls.isEmpty() ? existingImageUrls.get(0) : null;
+        }
 
-        // 수정된 게시글 저장
+        // 수정된 데이터로 게시글 업데이트 (썸네일 이미지 포함)
+        studentBoard = studentBoard.toBuilder()
+                .thumbnailImage(thumbnailImage)
+                .build();
+
+        // 업데이트된 게시글 저장
         studentBoardRepository.save(studentBoard);
 
+        // 응답 DTO 생성
         return new StudentBoardDto(
                 studentBoard.getBoardIdx(),
                 studentBoard.getTitle(),
                 studentBoard.getNickname(),
                 studentBoard.getThumbnailImage(),
-                studentBoard.isNearCampus(),
+                studentBoard.getIsNearCampus(),
                 studentBoard.getCategoryType()
         );
     }
+
 
     @Transactional
     public void deleteStudentBoard(HttpServletRequest request, Long boardIdx) {

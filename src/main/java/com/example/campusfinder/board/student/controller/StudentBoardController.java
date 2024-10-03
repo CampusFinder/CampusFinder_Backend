@@ -38,7 +38,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/student-board")
 @RequiredArgsConstructor
-@Tag(name = "학생찾기 게시판 API", description = "학생 찾기 게시판 관련 API")
+@Tag(name = "학생 찾기 게시판 API", description = "학생 찾기 게시판 관련 API")
 public class StudentBoardController {
 
     private final StudentBoardService studentBoardService;
@@ -118,13 +118,15 @@ public class StudentBoardController {
 
     @Operation(
             summary = "학생 찾기 게시글 조회",
-            description = "특정 카테고리의 학생 찾기 게시글 목록을 조회합니다. 각 게시글의 썸네일 이미지를 포함하여 조회됩니다.",
-            parameters = @Parameter(
-                    name = "categoryType",
-                    description = "조회할 카테고리 타입",
-                    example = "PROGRAMMING",
-                    required = true
-            )
+            description = "카테고리별로 또는 전체 학생 찾기 게시글 목록을 조회합니다.",
+            parameters = {
+                    @Parameter(
+                            name = "categoryType",
+                            description = "조회할 카테고리 타입. 지정하지 않으면 전체 게시글 조회",
+                            example = "DEV",
+                            required = false
+                    )
+            }
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -145,7 +147,7 @@ public class StudentBoardController {
                                                         "nickname": "student123",
                                                         "thumbnailImage": "image1.jpg",
                                                         "isNearCampus": true,
-                                                        "categoryType": "PROGRAMMING"
+                                                        "categoryType": "DEV"
                                                     },
                                                     {
                                                         "boardIdx": 2,
@@ -153,7 +155,7 @@ public class StudentBoardController {
                                                         "nickname": "student456",
                                                         "thumbnailImage": "image2.jpg",
                                                         "isNearCampus": false,
-                                                        "categoryType": "PROGRAMMING"
+                                                        "categoryType": "DEV"
                                                     }
                                                 ]
                                             }
@@ -172,11 +174,11 @@ public class StudentBoardController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class))
             )
     })
-    @GetMapping
+    @GetMapping("/list")
     public ResponseEntity<BaseResponse<List<StudentBoardDto>>> getStudentBoardListByCategory(
             @RequestParam CategoryType categoryType
     ) {
-        List<StudentBoardDto> studentBoardList = studentBoardService.getStudentBoardListByCategory(categoryType);
+        List<StudentBoardDto> studentBoardList = studentBoardService.getStudentBoardListByCategoryOrAll(categoryType);
         return ResponseEntity.ok(BaseResponse.ofSuccess(200, studentBoardList));
     }
 
@@ -192,9 +194,8 @@ public class StudentBoardController {
     public ResponseEntity<BaseResponse<StudentBoardDto>> updateStudentBoard(
             HttpServletRequest request,
             @PathVariable Long boardIdx,
-            @RequestPart StudentBoardRequestDto requestDto,
-            @RequestPart(required = false) List<MultipartFile> images) throws IOException {
-        StudentBoardDto updatedBoard = studentBoardService.updateStudentBoard(request, boardIdx, requestDto, images);
+            @RequestBody StudentBoardRequestDto requestDto) throws IOException { // @RequestBody로 통일
+        StudentBoardDto updatedBoard = studentBoardService.updateStudentBoard(request, boardIdx, requestDto);
         return ResponseEntity.ok(BaseResponse.ofSuccess(200, updatedBoard));
     }
 
@@ -215,7 +216,7 @@ public class StudentBoardController {
     }
 
     @Operation(
-            summary = "카테고리와 정렬 방식에 따른 게시글 조회",
+            summary = "학생찾기 게시글 시간순 정렬 조회",
             description = "특정 카테고리의 게시글을 최신순 또는 오래된순으로 정렬하여 조회",
             parameters = {
                     @Parameter(

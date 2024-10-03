@@ -30,9 +30,6 @@ import java.util.List;
 public class StudentBoardSortService {
 
     private final StudentBoardRepository studentBoardRepository;
-    private final UserRepository userRepository;
-    private final S3Domain s3Domain;
-    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 카테고리와 정렬 방식에 따라 게시글 목록 조회
@@ -58,7 +55,7 @@ public class StudentBoardSortService {
                         studentBoard.getTitle(),
                         studentBoard.getNickname(),
                         studentBoard.getThumbnailImage(),
-                        studentBoard.isNearCampus(),
+                        studentBoard.getIsNearCampus(),
                         studentBoard.getCategoryType()
                 ))
                 .toList();

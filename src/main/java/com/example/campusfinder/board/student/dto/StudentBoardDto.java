@@ -18,6 +18,6 @@ public record StudentBoardDto(
         String title,
         String nickname,
         String thumbnailImage,
-        boolean isNearCampus,
+        Boolean isNearCampus,
         CategoryType categoryType
 ) { }

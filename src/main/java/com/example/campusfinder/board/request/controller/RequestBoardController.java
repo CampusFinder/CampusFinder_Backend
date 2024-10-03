@@ -3,6 +3,7 @@ package com.example.campusfinder.board.request.controller;
 import com.example.campusfinder.board.request.dto.request.RequestBoardRequestDto;
 import com.example.campusfinder.board.request.dto.response.RequestBoardDto;
 import com.example.campusfinder.board.request.service.RequestBoardService;
+import com.example.campusfinder.board.request.service.RequestBoardSortService;
 import com.example.campusfinder.core.base.BaseResponse;
 import com.example.campusfinder.home.entity.CategoryType;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,6 +40,7 @@ import java.util.List;
 public class RequestBoardController {
 
     private final RequestBoardService requestBoardService;
+    private final RequestBoardSortService requestBoardSortService;
 
     @Operation(
             summary = "의뢰 찾기 글 작성",
@@ -115,14 +117,14 @@ public class RequestBoardController {
     }
 
     @Operation(
-            summary = "카테고리별 게시글 조회",
-            description = "카테고리별로 의뢰 게시글 목록을 조회합니다.",
+            summary = "의뢰 찾기 게시글 리스트 조회",
+            description = "카테고리별로 또는 전체 의뢰 게시글 목록을 조회합니다.",
             parameters = {
                     @Parameter(
                             name = "categoryType",
-                            description = "조회할 카테고리 타입",
+                            description = "조회할 카테고리 타입. 지정하지 않으면 전체 게시글 조회",
                             example = "DESIGN",
-                            required = true
+                            required = false
                     )
             }
     )
@@ -174,16 +176,16 @@ public class RequestBoardController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class))
             )
     })
-    @GetMapping("/{categoryType}")
+    @GetMapping("/list")
     public ResponseEntity<BaseResponse<List<RequestBoardDto>>> getRequestBoardsByCategory(
-            @PathVariable CategoryType categoryType
+            @RequestParam(required = false) CategoryType categoryType
     ) {
-        List<RequestBoardDto> requestBoardList = requestBoardService.getRequestBoardsByCategory(categoryType);
+        List<RequestBoardDto> requestBoardList = requestBoardService.getRequestBoardsByCategoryOrAll(categoryType);
         return ResponseEntity.ok(BaseResponse.ofSuccess(200, requestBoardList));
     }
 
     @Operation(
-            summary = "카테고리별 게시글 정렬 조회",
+            summary = "의뢰찾기 게시판 시간순 조회",
             description = "카테고리별로 게시글 목록을 최신순 또는 오래된순으로 조회합니다.",
             parameters = {
                     @Parameter(
@@ -248,16 +250,16 @@ public class RequestBoardController {
                     content = @Content(schema = @Schema(implementation = BaseResponse.class))
             )
     })
-    @GetMapping("/{categoryType}/sorted")
+    @GetMapping("/category/sort")
     public ResponseEntity<BaseResponse<List<RequestBoardDto>>> getRequestBoardsSortedByDate(
-            @PathVariable CategoryType categoryType,
-            @RequestParam boolean isLatest
+            @RequestParam(required = false) CategoryType categoryType, // 카테고리 선택적 파라미터로 변경
+            @RequestParam String sortType // 정렬 방식 파라미터 추가
     ) {
-        List<RequestBoardDto> sortedRequestBoardList = requestBoardService.getRequestBoardsSortedByDate(categoryType, isLatest);
+        List<RequestBoardDto> sortedRequestBoardList = requestBoardSortService.getRequestBoardsSortedByDate(categoryType, sortType);
         return ResponseEntity.ok(BaseResponse.ofSuccess(200, sortedRequestBoardList));
     }
 
-    @Operation(summary = "의뢰 게시글 수정", description = "특정 의뢰 게시글을 수정합니다.")
+    @Operation(summary = "의뢰 찾기 글 수정", description = "특정 의뢰 게시글을 수정합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "의뢰 게시글 수정 성공",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class))),
@@ -276,7 +278,7 @@ public class RequestBoardController {
         return ResponseEntity.ok(BaseResponse.ofSuccess(200, updatedBoard));
     }
 
-    @Operation(summary = "의뢰 게시글 삭제", description = "특정 의뢰 게시글을 삭제합니다.")
+    @Operation(summary = "의뢰 찾기 글 삭제", description = "특정 의뢰 게시글을 삭제합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "의뢰 게시글 삭제 성공",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class))),

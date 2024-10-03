@@ -21,7 +21,7 @@ public record StudentBoardDetailDto(
         String content,
         int viewCount,
         MeetingType meetingType,
-        boolean isNearCampus,
+        Boolean isNearCampus,
         List<String> imageUrls,
 
         String nickname,

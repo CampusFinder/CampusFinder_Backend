@@ -3,6 +3,7 @@ package com.example.campusfinder.board.request.service;
 import com.example.campusfinder.board.request.dto.request.RequestBoardRequestDto;
 import com.example.campusfinder.board.request.dto.response.RequestBoardDto;
 import com.example.campusfinder.board.request.entity.RequestBoard;
+import com.example.campusfinder.board.request.entity.RequestBoardImage;
 import com.example.campusfinder.board.request.repository.RequestBoardRepository;
 import com.example.campusfinder.core.security.JwtTokenProvider;
 import com.example.campusfinder.core.util.S3Domain;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,7 +82,7 @@ public class RequestBoardService {
                 .nickname(nickname)
                 .thumbnailImage(thumbnailImage)
                 .isUrgent(requestDto.isUrgent())
-                .isNegotiable(requestDto.agreeable()) // 합의 가능 여부
+                .isNegotiable(requestDto.isNegotiable()) // 합의 가능 여부
                 .money(requestDto.money())
                 .deadline(requestDto.deadline()) // 마감기한
                 .meetingType(requestDto.meetingType())
@@ -96,43 +98,28 @@ public class RequestBoardService {
                 requestBoard.getTitle(),
                 requestBoard.getNickname(),
                 requestBoard.getThumbnailImage(),
-                requestBoard.isUrgent(),
+                requestBoard.getIsUrgent(),
                 requestBoard.getMoney(),
                 requestBoard.getCategoryType()
         );
     }
 
     /**
-     * 카테고리별 게시글 조회 로직
-     * @param categoryType 카테고리 타입
-     * @return List<RequestBoardResponseDto> 게시글 목록 응답 DTO 리스트
+     * 카테고리별 또는 전체 RequestBoard 게시글 조회
+     * @param categoryType 카테고리 타입 (null이면 전체 조회)
+     * @return RequestBoardDto 목록
      */
     @Transactional(readOnly = true)
-    public List<RequestBoardDto> getRequestBoardsByCategory(CategoryType categoryType) {
-        List<RequestBoard> boards = requestBoardRepository.findAllByCategoryType(categoryType);
-        return boards.stream()
-                .map(board -> new RequestBoardDto(
-                        board.getBoardIdx(),
-                        board.getTitle(),
-                        board.getNickname(),
-                        board.getThumbnailImage(),
-                        board.isUrgent(),
-                        board.getMoney(),
-                        board.getCategoryType()
-                )).collect(Collectors.toList());
-    }
+    public List<RequestBoardDto> getRequestBoardsByCategoryOrAll(CategoryType categoryType) {
+        List<RequestBoard> boards;
 
-    /**
-     * 카테고리별 게시글 정렬 조회 로직 (최신순, 오래된순)
-     * @param categoryType 카테고리 타입
-     * @param isLatest 최신순 여부 (true: 최신순, false: 오래된순)
-     * @return List<RequestBoardResponseDto> 게시글 목록 응답 DTO 리스트
-     */
-    @Transactional(readOnly = true)
-    public List<RequestBoardDto> getRequestBoardsSortedByDate(CategoryType categoryType, boolean isLatest) {
-        List<RequestBoard> boards = isLatest ?
-                requestBoardRepository.findAllByCategoryTypeOrderByCreatedAtDesc(categoryType) : // 최신순 정렬
-                requestBoardRepository.findAllByCategoryTypeOrderByCreatedAtAsc(categoryType);   // 오래된순 정렬
+        if (categoryType != null) {
+            // 카테고리별 게시글 조회
+            boards = requestBoardRepository.findAllByCategoryType(categoryType);
+        } else {
+            // 전체 게시글 조회
+            boards = requestBoardRepository.findAll();
+        }
 
         return boards.stream()
                 .map(board -> new RequestBoardDto(
@@ -140,7 +127,7 @@ public class RequestBoardService {
                         board.getTitle(),
                         board.getNickname(),
                         board.getThumbnailImage(),
-                        board.isUrgent(),
+                        board.getIsUrgent(),
                         board.getMoney(),
                         board.getCategoryType()
                 )).collect(Collectors.toList());
@@ -151,11 +138,13 @@ public class RequestBoardService {
      */
     @Transactional
     public RequestBoardDto updateRequestBoard(Long boardIdx, HttpServletRequest request, RequestBoardRequestDto requestBoardDto) throws IOException {
+        // JWT 토큰에서 사용자 ID 추출
         String token = jwtTokenProvider.resolveToken(request);
         Long userIdx = jwtTokenProvider.getUserIdxFromToken(token);
         UserEntity user = userRepository.findById(userIdx)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
 
+        // 게시글 조회 및 수정 권한 확인
         RequestBoard requestBoard = requestBoardRepository.findById(boardIdx)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
 
@@ -163,10 +152,34 @@ public class RequestBoardService {
             throw new IllegalArgumentException("해당 게시글을 수정할 권한이 없습니다.");
         }
 
-        // 기존 이미지 유지, 삭제, 추가 관리
-        List<String> existingImageUrls = requestBoardDto.imageUrls(); // 기존 이미지 URL 목록
-        List<String> newImageUrls = null;
+        // 수정할 데이터 적용: Null 체크 후 기존 데이터 유지
+        requestBoard = requestBoard.toBuilder()
+                .title(requestBoardDto.title() != null ? requestBoardDto.title() : requestBoard.getTitle())
+                .content(requestBoardDto.content() != null ? requestBoardDto.content() : requestBoard.getContent())
+                .isUrgent(requestBoardDto.isUrgent() != null ? requestBoardDto.isUrgent() : requestBoard.getIsUrgent())
+                .money(requestBoardDto.money() != 0 ? requestBoardDto.money() : requestBoard.getMoney())
+                .deadline(requestBoardDto.deadline() != null ? requestBoardDto.deadline() : requestBoard.getDeadline())
+                .isNegotiable(requestBoardDto.isNegotiable() != null ? requestBoardDto.isNegotiable() : requestBoard.getIsNegotiable())
+                .meetingType(requestBoardDto.meetingType() != null ? requestBoardDto.meetingType() : requestBoard.getMeetingType())
+                .categoryType(requestBoardDto.categoryType() != null ? requestBoardDto.categoryType() : requestBoard.getCategoryType())
+                .build();
 
+        // 기존 이미지 유지 및 삭제 처리
+        List<String> existingImageUrls = requestBoardDto.imageUrls() != null ? new ArrayList<>(requestBoardDto.imageUrls()) : new ArrayList<>();
+        if (requestBoardDto.deletedImageUrls() != null && !requestBoardDto.deletedImageUrls().isEmpty()) {
+            List<RequestBoardImage> imagesToDelete = requestBoard.getImages().stream()
+                    .filter(image -> requestBoardDto.deletedImageUrls().contains(image.getImageUrl()))
+                    .collect(Collectors.toList());
+
+            for (RequestBoardImage image : imagesToDelete) {
+                s3Domain.deleteFile(image.getImageUrl()); // S3에서 이미지 삭제
+                requestBoard.getImages().remove(image); // DB에서 이미지 엔티티 삭제
+                existingImageUrls.remove(image.getImageUrl()); // 기존 이미지 목록에서도 삭제
+            }
+        }
+
+        // 새로운 이미지 추가 처리
+        List<String> newImageUrls = new ArrayList<>();
         if (requestBoardDto.images() != null && !requestBoardDto.images().isEmpty()) {
             newImageUrls = requestBoardDto.images().stream()
                     .map(image -> {
@@ -177,42 +190,35 @@ public class RequestBoardService {
                         }
                     })
                     .collect(Collectors.toList());
+            existingImageUrls.addAll(newImageUrls);
         }
 
-        // 최종 이미지 URL 목록을 합침
-        List<String> finalImageUrls = existingImageUrls;
-        if (newImageUrls != null) {
-            finalImageUrls.addAll(newImageUrls);
+        // 썸네일 이미지 설정: 기존 썸네일 이미지가 삭제되었거나 없을 경우 새 이미지로 설정
+        String thumbnailImage = requestBoard.getThumbnailImage();
+        if (thumbnailImage == null || (requestBoardDto.deletedImageUrls() != null && requestBoardDto.deletedImageUrls().contains(thumbnailImage))) {
+            thumbnailImage = !existingImageUrls.isEmpty() ? existingImageUrls.get(0) : null;
         }
 
-        // 첫 번째 이미지를 썸네일로 설정
-        String thumbnailImage = finalImageUrls.isEmpty() ? null : finalImageUrls.get(0);
-
-        // 수정된 데이터로 게시글 업데이트
+        // 수정된 데이터로 게시글 업데이트 (썸네일 이미지 포함)
         requestBoard = requestBoard.toBuilder()
-                .title(requestBoardDto.title())
-                .content(requestBoardDto.content())
                 .thumbnailImage(thumbnailImage)
-                .isUrgent(requestBoardDto.isUrgent())
-                .money(requestBoardDto.money())
-                .deadline(requestBoardDto.deadline())
-                .isNegotiable(requestBoardDto.agreeable())
-                .meetingType(requestBoardDto.meetingType())
-                .categoryType(requestBoardDto.categoryType())
                 .build();
 
+        // 수정된 게시글 저장
         requestBoardRepository.save(requestBoard);
 
+        // 응답 DTO 생성 및 반환
         return new RequestBoardDto(
                 requestBoard.getBoardIdx(),
                 requestBoard.getTitle(),
                 requestBoard.getNickname(),
                 requestBoard.getThumbnailImage(),
-                requestBoard.isUrgent(),
+                requestBoard.getIsUrgent(),
                 requestBoard.getMoney(),
                 requestBoard.getCategoryType()
         );
     }
+
 
     @Transactional
     public void deleteRequestBoard(Long boardIdx, HttpServletRequest request) {

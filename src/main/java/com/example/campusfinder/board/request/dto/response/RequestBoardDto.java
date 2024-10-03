@@ -18,7 +18,7 @@ public record RequestBoardDto(
         String title,
         String nickname,
         String thumbnailImage,
-        boolean isUrgent,
+        Boolean isUrgent,
         int money,
         CategoryType categoryType
 ) { }
