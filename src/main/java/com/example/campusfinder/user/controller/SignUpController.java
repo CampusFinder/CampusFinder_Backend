@@ -55,20 +55,20 @@ public class SignUpController {
         return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "닉네임 사용이 가능합니다."));
     }
 
-    @Operation(summary = "비밀번호 확인 API", description = "사용자가 입력한 비밀번호와 비밀번호 확인이 일치하는지 확인")
+    @Operation(summary = "비밀번호 확인 API", description = "사용자가 입력한 비밀번호 유효성 검사")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "비밀번호 일치",
+            @ApiResponse(responseCode = "200", description = "비밀번호 조건 충족",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class))),
-            @ApiResponse(responseCode = "400", description = "비밀번호 불일치",
+            @ApiResponse(responseCode = "400", description = "비밀번호 조건 불충족",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class)))
     })
     @PostMapping("/password-check")
     public ResponseEntity<BaseResponse> checkPassword(@RequestBody PasswordCheckRequest passwordCheckRequest) {
-        if (!userService.isPasswordMatching(passwordCheckRequest.password(), passwordCheckRequest.passwordConfirm())) {
+        if (!userService.isPasswordValid(passwordCheckRequest.password())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.ofError(HttpStatus.BAD_REQUEST.value(), "비밀번호가 일치하지 않습니다."));
+                    .body(BaseResponse.ofError(HttpStatus.BAD_REQUEST.value(), "비밀번호 정규식 일치해야합니다(영문, 숫자, 특수문자 포함 8자리)"));
         }
-        return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "비밀번호가 일치합니다."));
+        return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "비밀번호가 양식 충족."));
     }
 
     @Operation(summary = "회원가입 API", description = "회원 가입 요청을 처리하고, 성공 시 완료 메시지를 반환")

@@ -12,6 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.regex.Pattern;
+
 
 @Service
 @RequiredArgsConstructor
@@ -75,8 +77,9 @@ public class UserService {
         return userRepository.existsByNickname(nickname);
     }
 
-    // 비밀번호 일치 확인 메서드
-    public boolean isPasswordMatching(String password, String passwordConfirm) {
-        return password.equals(passwordConfirm);
+    public boolean isPasswordValid(String password) {
+        // 영문, 숫자, 특수문자가 각각 하나 이상 포함된 8자리 이상의 비밀번호 유효성 검사 정규식
+        String passwordPattern = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$";
+        return Pattern.matches(passwordPattern, password);
     }
 }

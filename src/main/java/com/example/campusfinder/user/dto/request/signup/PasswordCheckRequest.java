@@ -11,5 +11,5 @@ package com.example.campusfinder.user.dto.request.signup;
  * -----------------------------------------------------------
  * 2024-09-29        tlswl       최초 생성
  */
-public record PasswordCheckRequest(String password, String passwordConfirm) {
+public record PasswordCheckRequest(String password) {
 }
