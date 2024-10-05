@@ -106,4 +106,5 @@ public class SignUpController {
         userService.signUpUser(signUpRequest);
         return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(),"회원가입이 완료되었습니다."));
     }
+    //
 }
