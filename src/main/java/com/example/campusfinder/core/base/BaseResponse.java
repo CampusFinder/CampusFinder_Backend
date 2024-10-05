@@ -2,7 +2,6 @@ package com.example.campusfinder.core.base;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -20,66 +19,67 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(staticName = "of")
 final public class BaseResponse<T> {
 
-    //커스텀 상태 코드
+    // 커스텀 상태 코드
     private final int status;
 
-    //응답 메세지
+    // 응답 메시지
     private final String description;
 
-    //실제 응답 데이터
+    // 실제 응답 데이터
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final T data;
 
-    //성공 메세지 상수
-    private static final String SUCCESS_MESSAGE="SUCCESS";
+    // 성공 메시지 상수
+    private static final String SUCCESS_MESSAGE = "SUCCESS";
 
     /**
-     * 성공 응답 생성
+     * 데이터를 포함한 성공 응답 생성
      *
      * @param <T>    the type parameter
      * @param status the status
      * @param data   the data
      * @return the base response
      */
-    public static <T> BaseResponse<T> ofSuccess(int status, T data){
+    public static <T> BaseResponse<T> ofSuccess(int status, T data) {
         return new BaseResponse<>(status, SUCCESS_MESSAGE, data);
+    }
+
+    /**
+     * 데이터를 포함하지 않는 성공 응답 생성
+     *
+     * @param status the status
+     * @param description the description
+     * @return the base response
+     */
+    public static BaseResponse<Void> ofSuccessWithoutData(int status, String description) {
+        return new BaseResponse<>(status, description, null);
     }
 
     /**
      * 실패 응답 생성
      *
-     * @param <T>     the type parameter
-     * @param status  the status
-     * @param message the message
+     * @param <T>          the type parameter
+     * @param status       the status
+     * @param description  the description
      * @return the base response
      */
-    public static <T> BaseResponse<T> ofFail(int status, String message){
-        return new BaseResponse<>(status, message, null);
-    }
-
-    /**
-     * 데이터를 반환하지 않는 성공 응답 생성
-     *
-     * @param status the status
-     * @return the base response
-     */
-    public static BaseResponse<Void> ofSuccessWithoutData(int status){
-        return new BaseResponse<>(status, SUCCESS_MESSAGE, null);
+    public static <T> BaseResponse<T> ofFail(int status, String description) {
+        return new BaseResponse<>(status, description, null);
     }
 
     /**
      * 커스텀 실패 응답 생성
      *
      * @param customStatus the custom status
-     * @param message      the message
+     * @param description      the description
      * @return the base response
      */
-    public static BaseResponse<Void> ofCustomFail(int customStatus, String message){
-        return new BaseResponse<>(customStatus, message, null);
+    public static BaseResponse<Void> ofCustomFail(int customStatus, String description) {
+        return new BaseResponse<>(customStatus, description, null);
     }
 
     // 오류 응답을 생성하는 메서드
-    public static <T> BaseResponse<T> ofError(int status, String message) {
-        return new BaseResponse<>(status, message, null);
+    public static <T> BaseResponse<T> ofError(int status, String description) {
+        return new BaseResponse<>(status, description, null);
     }
 }
