@@ -54,7 +54,6 @@ public class SignInController {
                                                 "status": 200,
                                                 "description": "성공",
                                                 "data": {
-                                                    "userIdx":1,
                                                     "accessToken": "ACCESS_TOKEN",
                                                     "refreshToken": "REFRESH_TOKEN"
                                                 }
