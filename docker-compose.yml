@@ -11,6 +11,8 @@ services:
       TZ: Asia/Seoul
     ports:
       - 3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql  # 볼륨 설정 추가
     networks:
       - docker-bridge
 
@@ -26,3 +28,6 @@ services:
 networks:
   docker-bridge:
     driver: bridge
+
+volumes:
+  mysql-data:  # 볼륨 정의 추가
