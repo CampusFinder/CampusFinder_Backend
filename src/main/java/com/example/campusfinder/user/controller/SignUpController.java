@@ -90,7 +90,7 @@ public class SignUpController {
                             examples = @ExampleObject(
                                     name = "회원가입 예시",
                                     value = """
-                                     주       {
+                                            {
                                                 "role": "STUDENT",
                                                 "email": "tlswlgns1003@sju.ac.kr",
                                                 "phoneNum": "01012345678",
