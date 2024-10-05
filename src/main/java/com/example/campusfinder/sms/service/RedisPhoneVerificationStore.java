@@ -32,7 +32,7 @@ public class RedisPhoneVerificationStore {
     // 인증 성공 시 VERIFIED 상태로 저장
     public void markPhoneVerified(String phoneNumber) {
         String redisKey = getRedisKey(phoneNumber);
-        redisTemplate.opsForValue().set(redisKey, "VERIFIED", Duration.ofMinutes(10));  // 인증 후 10분간 상태 유지
+        redisTemplate.opsForValue().set(redisKey, "VERIFIED", Duration.ofMinutes(1));  // 인증 후 1분간 상태 유지
     }
 
     // Redis에서 인증 상태 확인
