@@ -33,13 +33,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-@Tag(name = "Token API", description = "토큰 재발급을 위한 API, accessToken, refreshToken 모두 재발행")
+@Tag(name = "토큰 발급 API", description = "토큰 재발급을 위한 API")
 public class TokenController {
 
     private final TokenService tokenService;
 
     @Operation(
-            summary = "AccessToken 재발급 API",
+            summary = "accessToken, refreshToken 모두 재발행",
             description = "유효한 RefreshToken을 사용하여 만료된 AccessToken을 재발급합니다.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "AccessToken을 재발급하기 위한 RefreshToken 요청",
