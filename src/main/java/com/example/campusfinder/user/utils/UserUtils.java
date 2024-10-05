@@ -43,7 +43,16 @@ public class UserUtils {
                 .build();
     }
 
-    public void saveRefreshToken(String phone, String refreshToken){
-        redisTemplate.opsForValue().set(phone, refreshToken, 7, TimeUnit.DAYS);
+    // RefreshToken 저장 시 userIdx를 key로 사용
+    public void saveRefreshToken(String userIdx, String refreshToken) {
+        redisTemplate.opsForValue().set(userIdx, refreshToken, 7, TimeUnit.DAYS);
+    }
+
+    public String getRefreshTokenFromRedis(String userIdx) {
+        return (String) redisTemplate.opsForValue().get(userIdx);
+    }
+
+    public void deleteRefreshToken(String userIdx) {
+        redisTemplate.delete(userIdx);
     }
 }
