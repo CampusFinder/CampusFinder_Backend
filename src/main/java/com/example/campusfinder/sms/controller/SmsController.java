@@ -65,8 +65,8 @@ public class SmsController {
                     description = "SMS 전송 성공",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class), examples = @ExampleObject(value = """
                 {
-                  "code": 200,
-                  "message": "SMS 전송 성공",
+                  "status": 200,
+                  "description": "SMS 전송 성공",
                   "data": null
                 }
             """))
@@ -76,8 +76,8 @@ public class SmsController {
                     description = "이메일 인증이 완료되지 않음",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class), examples = @ExampleObject(value = """
                 {
-                  "code": 403,
-                  "message": "이메일 인증이 완료되지 않았습니다.",
+                  "status": 403,
+                  "description": "이메일 인증이 완료되지 않았습니다.",
                   "data": null
                 }
             """))
@@ -87,20 +87,21 @@ public class SmsController {
                     description = "잘못된 요청 - 필수 파라미터가 누락되었거나 값이 잘못된 경우",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class), examples = @ExampleObject(value = """
                 {
-                  "code": 400,
-                  "message": "잘못된 요청입니다.",
+                  "status": 400,
+                  "description": "잘못된 요청입니다.",
                   "data": null
                 }
             """))
             )
     })
     @PostMapping("/send")
-    public ResponseEntity<BaseResponse> sendSms(@RequestBody SmsRequest request) {
+    public ResponseEntity<BaseResponse<Void>> sendSms(@RequestBody SmsRequest request) {
         try {
             smsVerificationService.sendSmsVerification(request);
-            return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SMS 전송 성공"));
+            return ResponseEntity.ok(BaseResponse.ofSuccessWithoutData(HttpStatus.OK.value(), "SMS 전송 성공"));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BaseResponse.ofError(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(BaseResponse.ofError(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
         }
     }
 
@@ -130,8 +131,8 @@ public class SmsController {
                     description = "SMS 인증 성공",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class), examples = @ExampleObject(value = """
                 {
-                  "code": 200,
-                  "message": "SMS 인증 성공",
+                  "status": 200,
+                  "description": "SMS 인증 성공",
                   "data": null
                 }
             """))
@@ -141,8 +142,8 @@ public class SmsController {
                     description = "인증 코드가 유효하지 않음 - 인증 코드가 틀리거나 만료된 경우",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class), examples = @ExampleObject(value = """
                 {
-                  "code": 401,
-                  "message": "인증 코드가 유효하지 않습니다.",
+                  "status": 401,
+                  "description": "인증 코드가 유효하지 않습니다.",
                   "data": null
                 }
             """))
@@ -152,20 +153,21 @@ public class SmsController {
                     description = "잘못된 요청 - 필수 파라미터가 누락되었거나 값이 잘못된 경우",
                     content = @Content(schema = @Schema(implementation = BaseResponse.class), examples = @ExampleObject(value = """
                 {
-                  "code": 400,
-                  "message": "잘못된 요청입니다.",
+                  "status": 400,
+                  "description": "잘못된 요청입니다.",
                   "data": null
                 }
             """))
             )
     })
     @PostMapping("/verify")
-    public ResponseEntity<BaseResponse> verifySms(@RequestBody SmsRequest request) {
+    public ResponseEntity<BaseResponse<Void>> verifySms(@RequestBody SmsRequest request) {
         try {
             smsValidationService.verifySms(request);
-            return ResponseEntity.ok(BaseResponse.ofSuccess(HttpStatus.OK.value(), "SMS 인증 성공"));
+            return ResponseEntity.ok(BaseResponse.ofSuccessWithoutData(HttpStatus.OK.value(), "SMS 인증 성공"));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(BaseResponse.ofError(HttpStatus.UNAUTHORIZED.value(), e.getMessage()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(BaseResponse.ofError(HttpStatus.UNAUTHORIZED.value(), e.getMessage()));
         }
     }
 }

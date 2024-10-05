@@ -67,7 +67,7 @@ public class UserService {
         String accessToken = jwtTokenProvider.generateAccessToken(user.getUserIdx());
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUserIdx());
         // Refresh Token 저장 (Redis)
-        userUtils.saveRefreshToken(user.getPhoneNum(), refreshToken);
+        userUtils.saveRefreshToken(user.getUserIdx().toString(), refreshToken);
 
         return new SignInResponseDto(accessToken, refreshToken);
     }

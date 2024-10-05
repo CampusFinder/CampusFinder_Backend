@@ -43,6 +43,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/api/signup/**",
                                 "/api/signin",
+                                "/api/reissue",
                                 "/api/home/**",
                                 "/api/request-board",
                                 "/api/student-board",
