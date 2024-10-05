@@ -4,7 +4,7 @@ services:
   mysql:
     container_name: mysql
     image: mysql:8.0
-    restart: always
+    restart: no
     environment:
       MYSQL_DATABASE: campusfinder
       MYSQL_ROOT_PASSWORD: Aa949841!
@@ -17,7 +17,7 @@ services:
   redis:
     container_name: redis
     image: redis
-    restart: always
+    restart: no
     ports:
       - "6379:6379"
     networks:
