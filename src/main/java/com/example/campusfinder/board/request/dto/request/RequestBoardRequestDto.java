@@ -21,7 +21,7 @@ import java.util.List;
 public record RequestBoardRequestDto(
         CategoryType categoryType,
         String title,
-        int money,
+        Integer money,
         Boolean isNegotiable,
         LocalDate deadline,
         MeetingType meetingType,

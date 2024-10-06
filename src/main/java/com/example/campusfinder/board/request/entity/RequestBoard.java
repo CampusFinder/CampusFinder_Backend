@@ -54,7 +54,7 @@ public class RequestBoard extends BaseEntity {
     private String thumbnailImage;
     private Boolean isUrgent;
 
-    private int money;
+    private Integer money;
     @Column(name = "deadline")
     private LocalDate deadline; // 마감 기한
 
