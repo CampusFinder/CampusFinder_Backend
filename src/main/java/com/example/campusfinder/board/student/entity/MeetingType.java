@@ -14,6 +14,6 @@ package com.example.campusfinder.board.student.entity;
 public enum MeetingType {
     FACE_TO_FACE,//대면
     NONE_FACE_TO_FACE,//비대면
-    NOTTING//상관없음
+    NOTHING//상관없음
 
 }
