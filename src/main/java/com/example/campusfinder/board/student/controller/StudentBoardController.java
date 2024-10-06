@@ -63,7 +63,7 @@ public class StudentBoardController {
                                                 "isNearCampus": true,
                                                 "meetingType": "NOTHING",
                                                 "content": "프로그래밍 수업 과제 도와주실 분 구합니다.",
-                                                "images": ["image1.jpg", "image2.jpg"]
+                                                "uploadImages": ["image1.jpg", "image2.jpg"]
                                             }
                                             """
                             )
