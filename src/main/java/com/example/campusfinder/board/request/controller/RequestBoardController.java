@@ -27,11 +27,11 @@ import java.util.List;
  * fileName       : ReqeustBoardController
  * author         : tlswl
  * date           : 2024-10-01
- * description    :
+ * description    : 의뢰 게시판에 대한 Controller입니다.
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2024-10-01        tlswl       최초 생성
+ * 2024-10-01        tlswl              최초 생성
  */
 @RestController
 @RequestMapping("/api/request-board")
@@ -56,13 +56,13 @@ public class RequestBoardController {
                                     value = """
                                             {
                                                 "categoryType": "DESIGN",
-                                                "title": "지금 학교에서 ppt 화면 제작해주실 분 구해요~!",
-                                                "money": 10000,
-                                                "agreeable": true,
+                                                "title": "학교에서 PPT 디자인 제작 의뢰합니다.",
+                                                "money": 15000,
+                                                "isUrgent": true,
+                                                "content": "학교 발표 자료 제작이 급합니다. PPT 디자인 제작해주실 분 구해요.",
                                                 "deadline": "2024-12-31",
                                                 "meetingType": "FACE_TO_FACE",
-                                                "isUrgent": true,
-                                                "content": "급하게 ppt 디자인 제작이 필요합니다.",
+                                                "isNegotiable": true,
                                                 "images": []
                                             }
                                             """
@@ -84,11 +84,11 @@ public class RequestBoardController {
                                                 "message": "성공",
                                                 "data": {
                                                     "boardIdx": 1,
-                                                    "title": "지금 학교에서 ppt 화면 제작해주실 분 구해요~!",
-                                                    "nickname": "student123",
+                                                    "title": "학교에서 PPT 디자인 제작 의뢰합니다.",
+                                                    "nickname": "professor123",
                                                     "thumbnailImage": "image1.jpg",
                                                     "isUrgent": true,
-                                                    "money": 10000,
+                                                    "money": 15000,
                                                     "categoryType": "DESIGN"
                                                 }
                                             }
@@ -143,17 +143,17 @@ public class RequestBoardController {
                                                 "data": [
                                                     {
                                                         "boardIdx": 1,
-                                                        "title": "지금 학교에서 ppt 화면 제작해주실 분 구해요~!",
-                                                        "nickname": "student123",
+                                                        "title": "학교에서 PPT 디자인 제작 의뢰합니다.",
+                                                        "nickname": "professor123",
                                                         "thumbnailImage": "image1.jpg",
                                                         "isUrgent": true,
-                                                        "money": 10000,
+                                                        "money": 15000,
                                                         "categoryType": "DESIGN"
                                                     },
                                                     {
                                                         "boardIdx": 2,
-                                                        "title": "웹 개발 프로젝트 팀원 구합니다.",
-                                                        "nickname": "student456",
+                                                        "title": "웹 개발 프로젝트 팀원 모집합니다.",
+                                                        "nickname": "professor456",
                                                         "thumbnailImage": "image2.jpg",
                                                         "isUrgent": false,
                                                         "money": 20000,
@@ -185,7 +185,7 @@ public class RequestBoardController {
     }
 
     @Operation(
-            summary = "의뢰찾기 게시판 시간순 조회",
+            summary = "의뢰 찾기 게시판 시간순 조회",
             description = "카테고리별로 게시글 목록을 최신순 또는 오래된순으로 조회합니다.",
             parameters = {
                     @Parameter(
@@ -195,7 +195,7 @@ public class RequestBoardController {
                             required = true
                     ),
                     @Parameter(
-                            name = "isLatest",
+                            name = "sortType",
                             description = "정렬 기준 (true: 최신순, false: 오래된순)",
                             example = "true",
                             required = true
@@ -217,17 +217,17 @@ public class RequestBoardController {
                                                 "data": [
                                                     {
                                                         "boardIdx": 1,
-                                                        "title": "지금 학교에서 ppt 화면 제작해주실 분 구해요~!",
-                                                        "nickname": "student123",
+                                                        "title": "학교에서 PPT 디자인 제작 의뢰합니다.",
+                                                        "nickname": "professor123",
                                                         "thumbnailImage": "image1.jpg",
                                                         "isUrgent": true,
-                                                        "money": 10000,
+                                                        "money": 15000,
                                                         "categoryType": "DESIGN"
                                                     },
                                                     {
                                                         "boardIdx": 2,
-                                                        "title": "웹 개발 프로젝트 팀원 구합니다.",
-                                                        "nickname": "student456",
+                                                        "title": "웹 개발 프로젝트 팀원 모집합니다.",
+                                                        "nickname": "professor456",
                                                         "thumbnailImage": "image2.jpg",
                                                         "isUrgent": false,
                                                         "money": 20000,
@@ -295,6 +295,4 @@ public class RequestBoardController {
         requestBoardService.deleteRequestBoard(boardIdx, request);
         return ResponseEntity.ok(BaseResponse.ofSuccess(200, null));
     }
-
-
 }

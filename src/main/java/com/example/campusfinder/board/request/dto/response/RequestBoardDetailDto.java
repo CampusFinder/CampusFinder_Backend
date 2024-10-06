@@ -22,7 +22,7 @@ public record RequestBoardDetailDto(
         CategoryType categoryType,
         String title,
         String content,
-        int money,
+        Integer money,
         MeetingType meetingType,
         LocalDate deadline,
         String nickname,
