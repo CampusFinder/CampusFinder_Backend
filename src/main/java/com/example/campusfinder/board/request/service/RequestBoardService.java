@@ -60,6 +60,11 @@ public class RequestBoardService {
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
         String nickname = user.getNickname();
 
+        // content 필드가 null이거나 빈 문자열인지 확인
+        if (requestDto.content() == null || requestDto.content().trim().isEmpty()) {
+            throw new IllegalArgumentException("게시글 내용(content)은 필수 입력 사항입니다.");
+        }
+
         // S3에 이미지 업로드 및 URL 리스트 생성
         List<String> imageUrls = new ArrayList<>();
         String thumbnailImage = null;
