@@ -3,6 +3,7 @@ package com.example.campusfinder.email.service;
 import com.example.campusfinder.email.dto.EmailRequest;
 import com.example.campusfinder.email.repository.EmailVerificationRepository;
 import com.example.campusfinder.email.utils.EmailSender;
+import com.example.campusfinder.email.utils.RedisEmailStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -17,6 +18,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class ProfessorEmailService implements EmailService {
     private final StringRedisTemplate redisTemplate;
+    private final RedisEmailStore redisEmailStore;
     private final EmailSender emailSender;
     private final EmailVerificationRepository emailVerificationRepository;
     @Value("${univcert.api-key}")
@@ -38,7 +40,7 @@ public class ProfessorEmailService implements EmailService {
         String redisKey = "email:verification:" + emailRequest.email();
         clearPendingVerification(emailRequest.email());
         String code = generateVerificationCode();
-        redisTemplate.opsForValue().set(redisKey, code, Duration.ofMinutes(10));
+        redisEmailStore.savePendingState(emailRequest.email(), code, 600L);
 
         // 이메일 전송 로직 추가
         String subject = "CampusFinder 교수 인증번호";
@@ -49,14 +51,28 @@ public class ProfessorEmailService implements EmailService {
     @Override
     public boolean verifyCode(String email, String univName, int code) {
         String redisKey = "email:verification:" + email;
-        String storedCode = redisTemplate.opsForValue().get(redisKey);
+        String storedValue = redisTemplate.opsForValue().get(redisKey);
 
-        if (storedCode == null) {
+        if (storedValue == null) {
             clearPendingVerification(email); // Redis 초기화
             throw new IllegalArgumentException("유효시간이 지났습니다. 다시 인증을 받아주세요.");
         }
 
-        return storedCode.equals(String.valueOf(code));
+        // JSON에서 code 값을 추출
+        String storedCode = null;
+        if (storedValue.contains("\"code\":\"")) {
+            int start = storedValue.indexOf("\"code\":\"") + 8; // "code"의 시작 위치 계산
+            int end = storedValue.indexOf("\"", start); // "code" 값의 끝 위치 계산
+            storedCode = storedValue.substring(start, end); // "code" 값 추출
+        }
+
+        // 저장된 코드와 입력받은 코드를 비교
+        boolean isCodeMatching = storedCode != null && storedCode.equals(String.valueOf(code));
+        if (isCodeMatching) {
+            // 이메일 인증이 성공하면 상태를 COMPLETED로 저장
+            redisEmailStore.saveCompletedState(email);
+        }
+        return isCodeMatching;
     }
 
     @Override
