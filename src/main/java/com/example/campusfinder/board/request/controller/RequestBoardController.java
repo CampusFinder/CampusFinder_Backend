@@ -125,6 +125,12 @@ public class RequestBoardController {
                             description = "조회할 카테고리 타입. 지정하지 않으면 전체 게시글 조회",
                             example = "DESIGN",
                             required = false
+                    ),
+                    @Parameter(
+                            name = "roleProfessorOnly",
+                            description = "true면 교수꺼만, false면 필터링 없이 다같이 글 조회",
+                            example = "true",
+                            required = false
                     )
             }
     )
@@ -177,11 +183,11 @@ public class RequestBoardController {
             )
     })
     @GetMapping("/list")
-    public ResponseEntity<BaseResponse<List<RequestBoardDto>>> getRequestBoardsByCategory(
-            @RequestParam(required = false) CategoryType categoryType
-    ) {
-        List<RequestBoardDto> requestBoardList = requestBoardService.getRequestBoardsByCategoryOrAll(categoryType);
-        return ResponseEntity.ok(BaseResponse.ofSuccess(200, requestBoardList));
+    public ResponseEntity<BaseResponse<List<RequestBoardDto>>> getAllRequestBoards(
+            @RequestParam(required = false) CategoryType categoryType,
+            @RequestParam(required = false, defaultValue = "false") boolean roleProfessorOnly) {
+        List<RequestBoardDto> boards = requestBoardService.getRequestBoardsByCategoryOrAll(categoryType, roleProfessorOnly);
+        return ResponseEntity.ok(BaseResponse.ofSuccess(200, boards));
     }
 
     @Operation(

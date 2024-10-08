@@ -9,6 +9,7 @@ import com.example.campusfinder.board.request.repository.RequestBoardRepository;
 import com.example.campusfinder.core.security.JwtTokenProvider;
 import com.example.campusfinder.core.util.S3Domain;
 import com.example.campusfinder.home.entity.CategoryType;
+import com.example.campusfinder.user.entity.Role;
 import com.example.campusfinder.user.entity.UserEntity;
 import com.example.campusfinder.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -59,6 +60,11 @@ public class RequestBoardService {
         UserEntity user = userRepository.findById(userIdx)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
         String nickname = user.getNickname();
+
+        // 사용자 Role이 PROFESSOR 확인
+        if (user.getRole() != Role.PROFESSOR) {  // PROFESSOR 아닌 경우 예외 발생
+            throw new IllegalArgumentException("학생만 게시글을 작성할 수 있습니다.");
+        }
 
         // content 필드가 null이거나 빈 문자열인지 확인
         if (requestDto.content() == null || requestDto.content().trim().isEmpty()) {
@@ -132,15 +138,24 @@ public class RequestBoardService {
      * @return RequestBoardDto 목록
      */
     @Transactional(readOnly = true)
-    public List<RequestBoardDto> getRequestBoardsByCategoryOrAll(CategoryType categoryType) {
+    public List<RequestBoardDto> getRequestBoardsByCategoryOrAll(CategoryType categoryType, boolean roleProfessorOnly) {
         List<RequestBoard> boards;
 
+        // 카테고리별 또는 전체 게시글 조회
         if (categoryType != null) {
-            // 카테고리별 게시글 조회
             boards = requestBoardRepository.findAllByCategoryType(categoryType);
         } else {
-            // 전체 게시글 조회
             boards = requestBoardRepository.findAll();
+        }
+
+        // 교수님 게시글만 조회 옵션이 활성화된 경우 필터링
+        if (roleProfessorOnly) {
+            boards = boards.stream()
+                    .filter(board -> userRepository.findByNickname(board.getNickname())
+                            .map(UserEntity::getRole)
+                            .filter(role -> role == Role.PROFESSOR)  // Enum 타입으로 Role 비교
+                            .isPresent())  // Role이 PROFESSOR인 경우만 필터링
+                    .collect(Collectors.toList());
         }
 
         return boards.stream()
@@ -154,6 +169,8 @@ public class RequestBoardService {
                         board.getCategoryType()
                 )).collect(Collectors.toList());
     }
+
+
 
     /**
      * 의뢰 게시글 수정 메서드
