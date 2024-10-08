@@ -42,6 +42,80 @@ public class RequestBoardController {
     private final RequestBoardService requestBoardService;
     private final RequestBoardSortService requestBoardSortService;
 
+    // 교수 전용 글쓰기
+    @Operation(
+            summary = "교수 전용 의뢰 찾기 글 작성",
+            description = "의뢰 찾기 게시판에 교수만 새로운 글을 작성합니다.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "의뢰 게시글 작성 요청 데이터",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = RequestBoardRequestDto.class),
+                            examples = @ExampleObject(
+                                    name = "의뢰 게시글 작성 예시",
+                                    value = """
+                                            {
+                                                "categoryType": "DESIGN",
+                                                "title": "학교에서 PPT 디자인 제작 의뢰합니다.",
+                                                "money": 15000,
+                                                "isUrgent": true,
+                                                "content": "학교 발표 자료 제작이 급합니다. PPT 디자인 제작해주실 분 구해요.",
+                                                "deadline": "2024-12-31",
+                                                "meetingType": "FACE_TO_FACE",
+                                                "isNegotiable": true,
+                                                "images": []
+                                            }
+                                            """
+                            )
+                    )
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "의뢰 찾기 글 작성 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = BaseResponse.class),
+                            examples = @ExampleObject(
+                                    name = "의뢰 게시글 작성 성공 예시",
+                                    value = """
+                                            {
+                                                "status": 201,
+                                                "message": "성공",
+                                                "data": {
+                                                    "boardIdx": 1,
+                                                    "title": "학교에서 PPT 디자인 제작 의뢰합니다.",
+                                                    "nickname": "professor123",
+                                                    "thumbnailImage": "image1.jpg",
+                                                    "isUrgent": true,
+                                                    "money": 15000,
+                                                    "categoryType": "DESIGN"
+                                                }
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "권한 없음",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class))
+            )
+    })
+    @PostMapping("/professor")
+    public ResponseEntity<BaseResponse<RequestBoardDto>> createProfessorRequestBoard(
+            HttpServletRequest request,
+            @ModelAttribute RequestBoardRequestDto requestDto) throws IOException {
+        RequestBoardDto createdBoard = requestBoardService.createProfessorRequestBoard(request, requestDto);
+        return ResponseEntity.ok(BaseResponse.ofSuccess(201, createdBoard));
+    }
+
     @Operation(
             summary = "의뢰 찾기 글 작성",
             description = "의뢰 찾기 게시판에 새로운 글을 작성합니다.",
