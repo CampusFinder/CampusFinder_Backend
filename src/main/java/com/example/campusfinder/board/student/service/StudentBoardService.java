@@ -9,6 +9,7 @@ import com.example.campusfinder.board.student.repository.StudentBoardRepository;
 import com.example.campusfinder.core.security.JwtTokenProvider;
 import com.example.campusfinder.core.util.S3Domain;
 import com.example.campusfinder.home.entity.CategoryType;
+import com.example.campusfinder.user.entity.Role;
 import com.example.campusfinder.user.entity.UserEntity;
 import com.example.campusfinder.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,6 +47,12 @@ public class StudentBoardService {
         // UserEntity에서 닉네임을 가져옴
         UserEntity user = userRepository.findById(userIdx)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
+
+        // 사용자 Role이 STUDENT인지 확인
+        if (user.getRole() != Role.STUDENT) {  // STUDENT가 아닌 경우 예외 발생
+            throw new IllegalArgumentException("학생만 게시글을 작성할 수 있습니다.");
+        }
+
         String nickname = user.getNickname(); // 사용자 엔티티에서 닉네임 추출
 
         // S3에 이미지 업로드 및 썸네일 이미지 설정

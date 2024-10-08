@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -110,9 +111,20 @@ public class StudentBoardController {
     public ResponseEntity<BaseResponse<StudentBoardDto>> createStudentBoard(
             HttpServletRequest request,
             @ModelAttribute StudentBoardRequestDto requestDto
-    ) throws IOException {
-        StudentBoardDto createdBoard = studentBoardService.createStudentBoard(request, requestDto);
-        return ResponseEntity.ok(BaseResponse.ofSuccess(201, createdBoard));
+    ) {
+        try {
+            // 게시글 생성 서비스 호출
+            StudentBoardDto createdBoard = studentBoardService.createStudentBoard(request, requestDto);
+            return ResponseEntity.ok(BaseResponse.ofSuccess(201, createdBoard));
+        } catch (IllegalArgumentException ex) {
+            // 예외 발생 시 메시지를 포함하여 클라이언트에 반환
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(BaseResponse.ofError(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
+        } catch (Exception ex) {
+            // 예외 처리: 기타 예외 발생 시
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(BaseResponse.ofError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 오류가 발생했습니다."));
+        }
     }
 
     @Operation(
