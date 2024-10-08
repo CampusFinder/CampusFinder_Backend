@@ -227,7 +227,7 @@ public class StudentBoardController {
     }
 
     @Operation(
-            summary = "학생찾기 게시글 시간순 정렬 조회",
+            summary = "학생 찾기 게시글 시간순 정렬 조회",
             description = "특정 카테고리의 게시글을 최신순 또는 오래된순으로 정렬하여 조회",
             parameters = {
                     @Parameter(
@@ -238,8 +238,8 @@ public class StudentBoardController {
                     ),
                     @Parameter(
                             name = "sortType",
-                            description = "정렬 방식 (\"latest\" - 최신순, \"oldest\" - 오래된순)",
-                            example = "latest",
+                            description = "정렬 방식 (true: 최신순, false: 오래된순)",
+                            example = "true",
                             required = true
                     )
             }
@@ -253,29 +253,29 @@ public class StudentBoardController {
                             examples = @ExampleObject(
                                     name = "성공 응답 예시",
                                     value = """
-                                            {
-                                                "status": 200,
-                                                "message": "성공",
-                                                "data": [
-                                                    {
-                                                        "boardIdx": 1,
-                                                        "title": "프로그래밍 수업 과제 도움",
-                                                        "nickname": "student123",
-                                                        "thumbnailImage": "image1.jpg",
-                                                        "isNearCampus": true,
-                                                        "categoryType": "DEV"
-                                                    },
-                                                    {
-                                                        "boardIdx": 2,
-                                                        "title": "웹 개발 프로젝트 팀원 구합니다.",
-                                                        "nickname": "student456",
-                                                        "thumbnailImage": "image2.jpg",
-                                                        "isNearCampus": false,
-                                                        "categoryType": "DEV"
-                                                    }
-                                                ]
-                                            }
-                                            """
+                                        {
+                                            "status": 200,
+                                            "message": "성공",
+                                            "data": [
+                                                {
+                                                    "boardIdx": 1,
+                                                    "title": "프로그래밍 수업 과제 도움",
+                                                    "nickname": "student123",
+                                                    "thumbnailImage": "image1.jpg",
+                                                    "isNearCampus": true,
+                                                    "categoryType": "DEV"
+                                                },
+                                                {
+                                                    "boardIdx": 2,
+                                                    "title": "웹 개발 프로젝트 팀원 구합니다.",
+                                                    "nickname": "student456",
+                                                    "thumbnailImage": "image2.jpg",
+                                                    "isNearCampus": false,
+                                                    "categoryType": "DEV"
+                                                }
+                                            ]
+                                        }
+                                        """
                             )
                     )
             ),
@@ -293,7 +293,7 @@ public class StudentBoardController {
     @GetMapping("/category/sort")
     public ResponseEntity<BaseResponse<List<StudentBoardDto>>> getStudentBoardListByCategoryAndSort(
             @RequestParam CategoryType categoryType,
-            @RequestParam String sortType // 정렬 방식 파라미터 추가
+            @RequestParam boolean sortType // 정렬 방식 파라미터를 boolean으로 변경
     ) {
         List<StudentBoardDto> studentBoardList = studentBoardSortService.getStudentBoardListByCategoryAndSort(categoryType, sortType);
         return ResponseEntity.ok(BaseResponse.ofSuccess(200, studentBoardList));

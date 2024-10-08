@@ -272,13 +272,19 @@ public class RequestBoardController {
                             name = "categoryType",
                             description = "조회할 카테고리 타입",
                             example = "DESIGN",
-                            required = true
+                            required = false // 카테고리 선택적 파라미터로 설정
                     ),
                     @Parameter(
                             name = "sortType",
                             description = "정렬 기준 (true: 최신순, false: 오래된순)",
                             example = "true",
                             required = true
+                    ),
+                    @Parameter(
+                            name = "roleProfessorOnly",
+                            description = "교수 글만 조회 여부 (true: 교수 글만 조회, false: 전체 조회)",
+                            example = "false",
+                            required = false // 선택적 파라미터로 설정
                     )
             }
     )
@@ -291,31 +297,31 @@ public class RequestBoardController {
                             examples = @ExampleObject(
                                     name = "카테고리별 게시글 정렬 조회 성공 예시",
                                     value = """
-                                            {
-                                                "status": 200,
-                                                "message": "성공",
-                                                "data": [
-                                                    {
-                                                        "boardIdx": 1,
-                                                        "title": "학교에서 PPT 디자인 제작 의뢰합니다.",
-                                                        "nickname": "professor123",
-                                                        "thumbnailImage": "image1.jpg",
-                                                        "isUrgent": true,
-                                                        "money": 15000,
-                                                        "categoryType": "DESIGN"
-                                                    },
-                                                    {
-                                                        "boardIdx": 2,
-                                                        "title": "웹 개발 프로젝트 팀원 모집합니다.",
-                                                        "nickname": "professor456",
-                                                        "thumbnailImage": "image2.jpg",
-                                                        "isUrgent": false,
-                                                        "money": 20000,
-                                                        "categoryType": "DEVELOPMENT"
-                                                    }
-                                                ]
-                                            }
-                                            """
+                                        {
+                                            "status": 200,
+                                            "message": "성공",
+                                            "data": [
+                                                {
+                                                    "boardIdx": 1,
+                                                    "title": "학교에서 PPT 디자인 제작 의뢰합니다.",
+                                                    "nickname": "professor123",
+                                                    "thumbnailImage": "image1.jpg",
+                                                    "isUrgent": true,
+                                                    "money": 15000,
+                                                    "categoryType": "DESIGN"
+                                                },
+                                                {
+                                                    "boardIdx": 2,
+                                                    "title": "웹 개발 프로젝트 팀원 모집합니다.",
+                                                    "nickname": "professor456",
+                                                    "thumbnailImage": "image2.jpg",
+                                                    "isUrgent": false,
+                                                    "money": 20000,
+                                                    "categoryType": "DEVELOPMENT"
+                                                }
+                                            ]
+                                        }
+                                        """
                             )
                     )
             ),
@@ -332,10 +338,12 @@ public class RequestBoardController {
     })
     @GetMapping("/category/sort")
     public ResponseEntity<BaseResponse<List<RequestBoardDto>>> getRequestBoardsSortedByDate(
-            @RequestParam(required = false) CategoryType categoryType, // 카테고리 선택적 파라미터로 변경
-            @RequestParam String sortType // 정렬 방식 파라미터 추가
+            @RequestParam(required = false) CategoryType categoryType, // 카테고리 선택적 파라미터로 설정
+            @RequestParam String sortType, // 정렬 방식 파라미터
+            @RequestParam(required = false, defaultValue = "false") boolean roleProfessorOnly // 교수 글 필터링 파라미터
     ) {
-        List<RequestBoardDto> sortedRequestBoardList = requestBoardSortService.getRequestBoardsSortedByDate(categoryType, sortType);
+        // Service에서 정렬된 결과를 가져와서 응답으로 전달
+        List<RequestBoardDto> sortedRequestBoardList = requestBoardSortService.getRequestBoardsSortedByDate(categoryType, sortType, roleProfessorOnly);
         return ResponseEntity.ok(BaseResponse.ofSuccess(200, sortedRequestBoardList));
     }
 

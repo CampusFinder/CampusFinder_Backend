@@ -31,19 +31,13 @@ public class StudentBoardSortService {
     /**
      * 카테고리와 정렬 방식에 따라 게시글 목록 조회
      * @param categoryType 카테고리 타입
-     * @param sortType 정렬 방식 ("latest" - 최신순, "oldest" - 오래된순)
+     * @param sortType 정렬 방식 (true: 최신순, false: 오래된순)
      * @return 정렬된 게시글 목록
      */
     @Transactional(readOnly = true)
-    public List<StudentBoardDto> getStudentBoardListByCategoryAndSort(CategoryType categoryType, String sortType) {
-        // 정렬 방식 설정
-        Sort sort = Sort.by("createdAt"); // createdAt 기준 정렬
-
-        if ("latest".equalsIgnoreCase(sortType)) {
-            sort = sort.descending(); // 최신순
-        } else if ("oldest".equalsIgnoreCase(sortType)) {
-            sort = sort.ascending(); // 오래된순
-        }
+    public List<StudentBoardDto> getStudentBoardListByCategoryAndSort(CategoryType categoryType, boolean sortType) {
+        // 정렬 방식 설정 (true: 최신순, false: 오래된순)
+        Sort sort = sortType ? Sort.by("createdAt").descending() : Sort.by("createdAt").ascending();
 
         // 카테고리와 정렬 방식에 따라 게시글 조회
         return studentBoardRepository.findAllByCategoryType(categoryType, sort).stream()
