@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -110,9 +111,20 @@ public class StudentBoardController {
     public ResponseEntity<BaseResponse<StudentBoardDto>> createStudentBoard(
             HttpServletRequest request,
             @ModelAttribute StudentBoardRequestDto requestDto
-    ) throws IOException {
-        StudentBoardDto createdBoard = studentBoardService.createStudentBoard(request, requestDto);
-        return ResponseEntity.ok(BaseResponse.ofSuccess(201, createdBoard));
+    ) {
+        try {
+            // 게시글 생성 서비스 호출
+            StudentBoardDto createdBoard = studentBoardService.createStudentBoard(request, requestDto);
+            return ResponseEntity.ok(BaseResponse.ofSuccess(201, createdBoard));
+        } catch (IllegalArgumentException ex) {
+            // 예외 발생 시 메시지를 포함하여 클라이언트에 반환
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(BaseResponse.ofError(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
+        } catch (Exception ex) {
+            // 예외 처리: 기타 예외 발생 시
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(BaseResponse.ofError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 오류가 발생했습니다."));
+        }
     }
 
     @Operation(
@@ -215,7 +227,7 @@ public class StudentBoardController {
     }
 
     @Operation(
-            summary = "학생찾기 게시글 시간순 정렬 조회",
+            summary = "학생 찾기 게시글 시간순 정렬 조회",
             description = "특정 카테고리의 게시글을 최신순 또는 오래된순으로 정렬하여 조회",
             parameters = {
                     @Parameter(
@@ -226,8 +238,8 @@ public class StudentBoardController {
                     ),
                     @Parameter(
                             name = "sortType",
-                            description = "정렬 방식 (\"latest\" - 최신순, \"oldest\" - 오래된순)",
-                            example = "latest",
+                            description = "정렬 방식 (true: 최신순, false: 오래된순)",
+                            example = "true",
                             required = true
                     )
             }
@@ -241,29 +253,29 @@ public class StudentBoardController {
                             examples = @ExampleObject(
                                     name = "성공 응답 예시",
                                     value = """
-                                            {
-                                                "status": 200,
-                                                "message": "성공",
-                                                "data": [
-                                                    {
-                                                        "boardIdx": 1,
-                                                        "title": "프로그래밍 수업 과제 도움",
-                                                        "nickname": "student123",
-                                                        "thumbnailImage": "image1.jpg",
-                                                        "isNearCampus": true,
-                                                        "categoryType": "DEV"
-                                                    },
-                                                    {
-                                                        "boardIdx": 2,
-                                                        "title": "웹 개발 프로젝트 팀원 구합니다.",
-                                                        "nickname": "student456",
-                                                        "thumbnailImage": "image2.jpg",
-                                                        "isNearCampus": false,
-                                                        "categoryType": "DEV"
-                                                    }
-                                                ]
-                                            }
-                                            """
+                                        {
+                                            "status": 200,
+                                            "message": "성공",
+                                            "data": [
+                                                {
+                                                    "boardIdx": 1,
+                                                    "title": "프로그래밍 수업 과제 도움",
+                                                    "nickname": "student123",
+                                                    "thumbnailImage": "image1.jpg",
+                                                    "isNearCampus": true,
+                                                    "categoryType": "DEV"
+                                                },
+                                                {
+                                                    "boardIdx": 2,
+                                                    "title": "웹 개발 프로젝트 팀원 구합니다.",
+                                                    "nickname": "student456",
+                                                    "thumbnailImage": "image2.jpg",
+                                                    "isNearCampus": false,
+                                                    "categoryType": "DEV"
+                                                }
+                                            ]
+                                        }
+                                        """
                             )
                     )
             ),
@@ -281,7 +293,7 @@ public class StudentBoardController {
     @GetMapping("/category/sort")
     public ResponseEntity<BaseResponse<List<StudentBoardDto>>> getStudentBoardListByCategoryAndSort(
             @RequestParam CategoryType categoryType,
-            @RequestParam String sortType // 정렬 방식 파라미터 추가
+            @RequestParam boolean sortType // 정렬 방식 파라미터를 boolean으로 변경
     ) {
         List<StudentBoardDto> studentBoardList = studentBoardSortService.getStudentBoardListByCategoryAndSort(categoryType, sortType);
         return ResponseEntity.ok(BaseResponse.ofSuccess(200, studentBoardList));

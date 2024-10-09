@@ -9,6 +9,7 @@ import com.example.campusfinder.board.request.repository.RequestBoardRepository;
 import com.example.campusfinder.core.security.JwtTokenProvider;
 import com.example.campusfinder.core.util.S3Domain;
 import com.example.campusfinder.home.entity.CategoryType;
+import com.example.campusfinder.user.entity.Role;
 import com.example.campusfinder.user.entity.UserEntity;
 import com.example.campusfinder.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,27 +50,55 @@ public class RequestBoardService {
      * @return RequestBoardResponseDto 게시글 응답 DTO
      * @throws IOException 파일 업로드 실패 시 예외 발생
      */
+    /**
+     * 기존 전체 사용자 글쓰기 메서드
+     */
     @Transactional
     public RequestBoardDto createRequestBoard(HttpServletRequest request, RequestBoardRequestDto requestDto) throws IOException {
-        // JWT 토큰에서 userIdx 추출
         String token = jwtTokenProvider.resolveToken(request);
         Long userIdx = jwtTokenProvider.getUserIdxFromToken(token);
-
-        // UserEntity에서 닉네임 가져오기
-        UserEntity user = userRepository.findById(userIdx)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
+        UserEntity user = userRepository.findById(userIdx).orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
         String nickname = user.getNickname();
 
-        // content 필드가 null이거나 빈 문자열인지 확인
+        // 사용자 Role이 PROFESSOR일 때는 글 작성이 불가하도록 제한
+        if (user.getRole() == Role.PROFESSOR) {
+            throw new IllegalArgumentException("교수님은 이 게시글을 작성할 수 없습니다.");
+        }
+
+        return saveRequestBoard(requestDto, nickname);
+    }
+
+    /**
+     * 교수 전용 글쓰기 메서드
+     */
+    @Transactional
+    public RequestBoardDto createProfessorRequestBoard(HttpServletRequest request, RequestBoardRequestDto requestDto) throws IOException {
+        String token = jwtTokenProvider.resolveToken(request);
+        Long userIdx = jwtTokenProvider.getUserIdxFromToken(token);
+        UserEntity user = userRepository.findById(userIdx).orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
+        String nickname = user.getNickname();
+
+        // 사용자 Role이 PROFESSOR가 아니면 예외 발생
+        if (user.getRole() != Role.PROFESSOR) {
+            throw new IllegalArgumentException("교수님만 작성할 수 있는 게시글입니다.");
+        }
+
+        return saveRequestBoard(requestDto, nickname);
+    }
+
+    /**
+     * 게시글 저장 로직을 메서드로 분리하여 재사용
+     */
+    private RequestBoardDto saveRequestBoard(RequestBoardRequestDto requestDto, String nickname) throws IOException {
+        // 게시글 내용이 비어 있는지 확인
         if (requestDto.content() == null || requestDto.content().trim().isEmpty()) {
             throw new IllegalArgumentException("게시글 내용(content)은 필수 입력 사항입니다.");
         }
 
-        // S3에 이미지 업로드 및 URL 리스트 생성
+        // 이미지 업로드 및 썸네일 설정
         List<String> imageUrls = new ArrayList<>();
         String thumbnailImage = null;
 
-        // MultipartFile 이미지를 S3에 업로드하고 URL을 리스트에 저장
         if (requestDto.uploadImages() != null && !requestDto.uploadImages().isEmpty()) {
             imageUrls = requestDto.uploadImages().stream()
                     .map(image -> {
@@ -78,8 +107,7 @@ public class RequestBoardService {
                         } catch (IOException e) {
                             throw new RuntimeException("이미지 업로드 실패: " + e.getMessage());
                         }
-                    })
-                    .collect(Collectors.toList());
+                    }).collect(Collectors.toList());
 
             // 첫 번째 이미지를 썸네일로 설정
             thumbnailImage = imageUrls.isEmpty() ? null : imageUrls.get(0);
@@ -92,29 +120,26 @@ public class RequestBoardService {
                 .nickname(nickname)
                 .thumbnailImage(thumbnailImage)
                 .isUrgent(requestDto.isUrgent())
-                .isNegotiable(requestDto.isNegotiable()) // 합의 가능 여부
+                .isNegotiable(requestDto.isNegotiable())
                 .money(requestDto.money())
-                .deadline(requestDto.deadline()) // 마감기한
+                .deadline(requestDto.deadline())
                 .meetingType(requestDto.meetingType())
                 .categoryType(requestDto.categoryType())
                 .build();
 
-        // RequestBoard 엔티티 먼저 저장
+        // RequestBoard 저장
         requestBoardRepository.save(requestBoard);
 
-        // RequestBoardImage 엔티티 생성 및 저장 (별도의 Repository 사용)
-        if (imageUrls != null && !imageUrls.isEmpty()) {
-            for (String imageUrl : imageUrls) {
-                RequestBoardImage requestBoardImage = RequestBoardImage.builder()
-                        .imageUrl(imageUrl)
-                        .requestBoard(requestBoard) // 연관관계 설정
-                        .build();
-                // RequestBoardImage 엔티티 저장
-                requestBoardImageRepository.save(requestBoardImage);
-            }
+        // RequestBoardImage 엔티티 생성 및 저장
+        for (String imageUrl : imageUrls) {
+            RequestBoardImage requestBoardImage = RequestBoardImage.builder()
+                    .imageUrl(imageUrl)
+                    .requestBoard(requestBoard)
+                    .build();
+            requestBoardImageRepository.save(requestBoardImage);
         }
 
-        // 저장된 RequestBoard를 기반으로 DTO 생성 및 반환
+        // DTO 생성 및 반환
         return new RequestBoardDto(
                 requestBoard.getBoardIdx(),
                 requestBoard.getTitle(),
@@ -132,15 +157,24 @@ public class RequestBoardService {
      * @return RequestBoardDto 목록
      */
     @Transactional(readOnly = true)
-    public List<RequestBoardDto> getRequestBoardsByCategoryOrAll(CategoryType categoryType) {
+    public List<RequestBoardDto> getRequestBoardsByCategoryOrAll(CategoryType categoryType, boolean roleProfessorOnly) {
         List<RequestBoard> boards;
 
+        // 카테고리별 또는 전체 게시글 조회
         if (categoryType != null) {
-            // 카테고리별 게시글 조회
             boards = requestBoardRepository.findAllByCategoryType(categoryType);
         } else {
-            // 전체 게시글 조회
             boards = requestBoardRepository.findAll();
+        }
+
+        // 교수님 게시글만 조회 옵션이 활성화된 경우 필터링
+        if (roleProfessorOnly) {
+            boards = boards.stream()
+                    .filter(board -> userRepository.findByNickname(board.getNickname())
+                            .map(UserEntity::getRole)
+                            .filter(role -> role == Role.PROFESSOR)  // Enum 타입으로 Role 비교
+                            .isPresent())  // Role이 PROFESSOR인 경우만 필터링
+                    .collect(Collectors.toList());
         }
 
         return boards.stream()
@@ -154,6 +188,8 @@ public class RequestBoardService {
                         board.getCategoryType()
                 )).collect(Collectors.toList());
     }
+
+
 
     /**
      * 의뢰 게시글 수정 메서드
