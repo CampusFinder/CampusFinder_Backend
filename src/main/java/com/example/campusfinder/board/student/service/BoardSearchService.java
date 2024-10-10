@@ -26,12 +26,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BoardSearchService {
+
     private final StudentBoardRepository studentBoardRepository;
 
+    @Transactional(readOnly = true)
     public List<StudentBoardDto> searchStudentBoards(StudentSearchDto searchDto) {
         List<StudentBoard> boards;
 
-        // 카테고리 리스트가 null이거나 비어있을 경우 전체 카테고리에서 검색
+        // 카테고리 리스트가 비어있을 경우 전체 카테고리에서 검색
         if (searchDto.categories() == null || searchDto.categories().isEmpty()) {
             // 제목 또는 내용에 키워드가 포함된 게시글 전체 조회
             boards = studentBoardRepository.findAllByTitleContainingOrContentContaining(
@@ -44,6 +46,7 @@ public class BoardSearchService {
             );
         }
 
+        // 결과 DTO로 변환
         return boards.stream()
                 .map(board -> new StudentBoardDto(
                         board.getBoardIdx(),

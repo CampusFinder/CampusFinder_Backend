@@ -4,7 +4,9 @@ import com.example.campusfinder.board.student.dto.StudentBoardDto;
 import com.example.campusfinder.board.student.dto.StudentSearchDto;
 import com.example.campusfinder.board.student.service.BoardSearchService;
 import com.example.campusfinder.core.base.BaseResponse;
+import com.example.campusfinder.home.entity.CategoryType;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -40,75 +42,33 @@ public class StudentSearchController {
     @Operation(
             summary = "학생 찾기 게시글 검색",
             description = "키워드와 카테고리를 사용하여 학생 찾기 게시글을 검색합니다.",
-            requestBody = @RequestBody(
-                    description = "검색 요청 DTO",
-                    required = true,
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = StudentSearchDto.class),
-                            examples = @ExampleObject(
-                                    name = "학생 찾기 검색 예시",
-                                    value = """
-                                            {
-                                                "keyword": "프로그래밍",
-                                                "categories": ["DEV", "DESIGN"]
-                                            }
-                                            """
-                            )
-                    )
-            )
+            parameters = {
+                    @Parameter(name = "keyword", description = "검색 키워드", example = "프로그래밍", required = false),
+                    @Parameter(name = "categories", description = "카테고리 리스트", example = "[\"DEV\", \"DESIGN\"]", required = false)
+            }
     )
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "검색 결과 조회 성공",
-                    content = @Content(
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(
-                                    name = "검색 결과 예시",
-                                    value = """
-                                            {
-                                                "status": 200,
-                                                "message": "성공",
-                                                "data": [
-                                                    {
-                                                        "boardIdx": 1,
-                                                        "title": "프로그래밍 수업 과제 도움",
-                                                        "nickname": "student123",
-                                                        "thumbnailImage": "image1.jpg",
-                                                        "isNearCampus": true,
-                                                        "categoryType": "DEV"
-                                                    },
-                                                    {
-                                                        "boardIdx": 2,
-                                                        "title": "프로그래밍 개발 프로젝트 팀원 구합니다.",
-                                                        "nickname": "student456",
-                                                        "thumbnailImage": "image2.jpg",
-                                                        "isNearCampus": false,
-                                                        "categoryType": "DESIGN"
-                                                    }
-                                                ]
-                                            }
-                                            """
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "잘못된 요청",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "권한 없음",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))
-            )
+            @ApiResponse(responseCode = "200", description = "검색 결과 조회 성공",
+                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+            @ApiResponse(responseCode = "401", description = "권한 없음", content = @Content(schema = @Schema(implementation = BaseResponse.class)))
     })
-    @PostMapping
+    @GetMapping
     public ResponseEntity<BaseResponse<List<StudentBoardDto>>> searchStudentBoards(
-            @RequestBody StudentSearchDto searchDto) {
-        // BoardSearchService를 이용하여 검색 수행
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) List<CategoryType> categories // 이 부분이 null로 들어올 수 있음
+    ) {
+        // categories가 null일 경우 빈 리스트로 초기화
+        if (categories == null) {
+            categories = List.of();  // 빈 리스트로 설정
+        }
+
+        // 검색 DTO 생성
+        StudentSearchDto searchDto = new StudentSearchDto(keyword, categories);
+
+        // 검색 서비스 호출
         List<StudentBoardDto> searchResults = boardSearchService.searchStudentBoards(searchDto);
+
         return ResponseEntity.ok(BaseResponse.ofSuccess(200, searchResults));
     }
 }
