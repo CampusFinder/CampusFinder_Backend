@@ -29,4 +29,13 @@ public interface StudentBoardRepository extends JpaRepository<StudentBoard, Long
     @Query("UPDATE StudentBoard sb SET sb.viewCount = sb.viewCount + 1 WHERE sb.boardIdx = :boardIdx")
     void incrementViewCount(@Param("boardIdx") Long boardIdx);
 
+    // 제목 또는 내용에 특정 키워드가 포함된 모든 게시글을 조회하는 메서드
+    List<StudentBoard> findAllByTitleContainingOrContentContaining(String titleKeyword, String contentKeyword);
+
+    // 키워드와 특정 카테고리들 내에서 게시글을 검색하는 커스텀 쿼리 메서드
+    @Query("SELECT b FROM StudentBoard b WHERE (b.title LIKE %:keyword% OR b.content LIKE %:keyword%) AND (:categories IS NULL OR b.categoryType IN :categories)")
+    List<StudentBoard> searchByKeywordAndCategoryTypes(
+            @Param("keyword") String keyword,
+            @Param("categories") List<CategoryType> categories
+    );
 }
