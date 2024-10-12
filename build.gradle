@@ -31,6 +31,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
     implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
+    implementation 'org.springframework.security:spring-security-messaging'
 
     //web-socket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
