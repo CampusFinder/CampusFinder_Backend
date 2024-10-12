@@ -35,6 +35,14 @@ public class ChatRoomService {
             throw new IllegalArgumentException("자기 자신과는 채팅방을 생성할 수 없습니다.");
         }
 
+        // 기존 채팅방이 존재하는지 확인
+        ChatRoom existingChatRoom = chatRoomRepository.findByPostOwnerIdAndUserIdAndBoardIdx(postOwner.getUserIdx(), currentUserId, boardIdx);
+
+        if (existingChatRoom != null) {
+            // 이미 채팅방이 존재할 경우, 해당 채팅방 정보를 반환
+            return new ChatRoomResponseDto(existingChatRoom.getChatRoomId(), existingChatRoom.getName());
+        }
+
         // 카테고리 설정
         String postOwnerCategory;
         String userCategory;
