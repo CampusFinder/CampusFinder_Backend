@@ -1,6 +1,6 @@
 package com.example.campusfinder.board.student.dto;
 
-import com.example.campusfinder.board.student.entity.MeetingType;
+import com.example.campusfinder.board.coinstant.MeetingType;
 
 import java.util.List;
 

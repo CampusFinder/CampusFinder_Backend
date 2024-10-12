@@ -1,5 +1,6 @@
 package com.example.campusfinder.board.student.entity;
 
+import com.example.campusfinder.board.coinstant.MeetingType;
 import com.example.campusfinder.core.base.BaseEntity;
 import com.example.campusfinder.home.entity.CategoryType;
 import jakarta.persistence.*;

@@ -1,6 +1,6 @@
 package com.example.campusfinder.board.request.dto.response;
 
-import com.example.campusfinder.board.student.entity.MeetingType;
+import com.example.campusfinder.board.coinstant.MeetingType;
 import com.example.campusfinder.home.entity.CategoryType;
 
 import java.time.LocalDate;

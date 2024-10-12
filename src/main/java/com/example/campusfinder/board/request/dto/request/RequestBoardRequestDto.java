@@ -1,6 +1,6 @@
 package com.example.campusfinder.board.request.dto.request;
 
-import com.example.campusfinder.board.student.entity.MeetingType;
+import com.example.campusfinder.board.coinstant.MeetingType;
 import com.example.campusfinder.home.entity.CategoryType;
 import org.springframework.web.multipart.MultipartFile;
 
