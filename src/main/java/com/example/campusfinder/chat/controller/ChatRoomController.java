@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
-@Tag(name = "채팅방 API",description = "채팅방 생성 및 관리 API")
+@Tag(name = "채팅방 API", description = "채팅방 생성 및 관리 API")
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
@@ -33,9 +33,9 @@ public class ChatRoomController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = BaseResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = BaseResponse.class)))
     })
-    @PostMapping("room/create")
+    @PostMapping("/room/create")
     public ResponseEntity<BaseResponse<ChatRoomResponseDto>> createChatRoom(
-            @Parameter(description = "게시글 작성자의 닉네임과 게시글 번호", required = true)
+            @Parameter(description = "게시글 작성자의 닉네임, 게시글 번호, 게시글 타입", required = true)
             @RequestBody ChatRoomRequestDto requestDto,
             HttpServletRequest request) {
 
@@ -44,11 +44,16 @@ public class ChatRoomController {
             String token = jwtTokenProvider.resolveToken(request);
             Long currentUserId = jwtTokenProvider.getUserIdxFromToken(token);
 
-            // 채팅방 생성
-            ChatRoomResponseDto chatRoom = chatRoomService.createChatRoom(requestDto.postOwnerNickName(), currentUserId, requestDto.boardIdx());
+            // Service로 데이터 전달하여 채팅방 생성
+            ChatRoomResponseDto chatRoom = chatRoomService.createChatRoom(
+                    requestDto.postOwnerNickName(),
+                    currentUserId,
+                    requestDto.boardIdx(),
+                    requestDto.boardType()  // boardType 추가
+            );
             return ResponseEntity.status(HttpStatus.CREATED).body(BaseResponse.ofSuccess(HttpStatus.CREATED.value(), chatRoom));
         } catch (IllegalArgumentException e) {
-            // 예외 발생 시, 프론트에 메시지 전달
+            // 예외 발생 시 프론트에 메시지 전달
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BaseResponse.ofFail(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
         } catch (Exception e) {
             // 기타 예외 처리

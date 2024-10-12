@@ -11,4 +11,8 @@ package com.example.campusfinder.chat.dto.request;
  * -----------------------------------------------------------
  * 2024-10-12        tlswl       최초 생성
  */
-public record ChatRoomRequestDto(String postOwnerNickName, Long boardIdx) {}
+public record ChatRoomRequestDto(
+        String postOwnerNickName,
+        Long boardIdx,
+        String boardType
+) {}
