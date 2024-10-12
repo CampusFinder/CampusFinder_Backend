@@ -1,5 +1,6 @@
 package com.example.campusfinder.board.student.service;
 
+import com.example.campusfinder.board.coinstant.BoardType;
 import com.example.campusfinder.board.student.dto.StudentBoardDto;
 import com.example.campusfinder.board.student.dto.StudentBoardRequestDto;
 import com.example.campusfinder.board.student.entity.StudentBoard;
@@ -84,6 +85,7 @@ public class StudentBoardService {
                 .categoryType(studentBoardRequestDto.categoryType())
                 .meetingType(studentBoardRequestDto.meetingType())
                 .content(studentBoardRequestDto.content())
+                .boardType(BoardType.STUDENT)  // 학생 게시글로 설정
                 .build();
 
         // StudentBoard 엔티티 저장 (먼저 게시글 저장)

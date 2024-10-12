@@ -1,5 +1,6 @@
 package com.example.campusfinder.board.request.service;
 
+import com.example.campusfinder.board.coinstant.BoardType;
 import com.example.campusfinder.board.request.dto.request.RequestBoardRequestDto;
 import com.example.campusfinder.board.request.dto.response.RequestBoardDto;
 import com.example.campusfinder.board.request.entity.RequestBoard;
@@ -125,6 +126,7 @@ public class RequestBoardService {
                 .deadline(requestDto.deadline())
                 .meetingType(requestDto.meetingType())
                 .categoryType(requestDto.categoryType())
+                .boardType(BoardType.REQUEST)  // 의뢰 게시글로 설정
                 .build();
 
         // RequestBoard 저장

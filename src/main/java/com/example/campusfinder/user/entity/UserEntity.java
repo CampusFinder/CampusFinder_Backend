@@ -1,5 +1,6 @@
 package com.example.campusfinder.user.entity;
 
+import com.example.campusfinder.chat.entity.ChatRoomParticipant;
 import com.example.campusfinder.core.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * packageName    : com.example.campusfinder.user.entity
@@ -68,6 +72,11 @@ public class UserEntity extends BaseEntity {
     // 기본적으로 NULL 값을 가질 수 있는 프로필 이미지 URL 필드 추가
     @Column(name = "profile_image_url", nullable = true)
     private String profileImageUrl;
+
+    // ChatRoomParticipant와의 일대다 관계 설정
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChatRoomParticipant> chatRooms = new ArrayList<>();
+
 
     //이메일 인증 성공 시 호출
     public void verifyEmail(){

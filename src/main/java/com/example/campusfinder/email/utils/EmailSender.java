@@ -24,7 +24,7 @@ public class EmailSender {
 
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setTo(to);  // 이 부분이 받는 이메일을 설정하는 부분입니다.
+            helper.setTo(to);  // 이 부분이 받는 이메일을 설정하는 부분
             helper.setSubject(subject);
             helper.setText(text);
 
@@ -32,7 +32,7 @@ public class EmailSender {
             helper.setFrom("zaq230423@gmail.com", "CampusFinder");
 
             // 이메일 발송
-            logger.info("Sending email to {}", to);  // to 값이 받는 이메일입니다.
+            logger.info("Sending email to {}", to);  // to 값이 받는 이메일
             mailSender.send(message);
             logger.info("Email sent successfully to {}", to);  // 성공 로그
         } catch (MessagingException e) {

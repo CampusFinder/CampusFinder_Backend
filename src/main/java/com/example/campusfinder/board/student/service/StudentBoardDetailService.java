@@ -73,8 +73,8 @@ public class StudentBoardDetailService {
                 studentBoard.getMeetingType(),
                 studentBoard.getIsNearCampus(),
                 imageUrls,
-                user.getProfileImageUrl(), // 프로필 이미지 URL 포함
-                studentBoard.getNickname()
+                studentBoard.getNickname(),
+                user.getProfileImageUrl() // 프로필 이미지 URL 포함
         );
     }
 }

@@ -1,6 +1,7 @@
 package com.example.campusfinder.board.request.entity;
 
-import com.example.campusfinder.board.student.entity.MeetingType;
+import com.example.campusfinder.board.coinstant.BoardType;
+import com.example.campusfinder.board.coinstant.MeetingType;
 import com.example.campusfinder.core.base.BaseEntity;
 import com.example.campusfinder.home.entity.CategoryType;
 import jakarta.persistence.*;
@@ -43,6 +44,9 @@ public class RequestBoard extends BaseEntity {
     @Lob
     @Column(name="title",nullable = false)
     private String title;
+
+    @Enumerated(EnumType.STRING)
+    private BoardType boardType;  // 의뢰인지 고용인지 구분
 
     @Lob
     @Column(name="content",nullable = false)

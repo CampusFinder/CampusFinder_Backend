@@ -1,4 +1,4 @@
-package com.example.campusfinder.board.student.entity;
+package com.example.campusfinder.board.coinstant;
 
 /**
  * packageName    : com.example.campusfinder.board.student.entity
