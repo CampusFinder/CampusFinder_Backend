@@ -47,6 +47,7 @@ public class SecurityConfig {
                                 "/api/home/**",
                                 "/api/request-board",
                                 "/api/student-board",
+                                "/api/chat/room/**",
                                 "/api/request-board/**",
                                 "/api/student-board/**",
                                 "/api/certification/**").permitAll()
