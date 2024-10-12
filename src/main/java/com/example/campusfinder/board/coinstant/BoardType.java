@@ -13,5 +13,5 @@ package com.example.campusfinder.board.coinstant;
  */
 public enum BoardType {
     REQUEST,
-    HIRE
+    STUDENT
 }

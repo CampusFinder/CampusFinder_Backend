@@ -1,5 +1,6 @@
 package com.example.campusfinder.board.student.entity;
 
+import com.example.campusfinder.board.coinstant.BoardType;
 import com.example.campusfinder.board.coinstant.MeetingType;
 import com.example.campusfinder.core.base.BaseEntity;
 import com.example.campusfinder.home.entity.CategoryType;
@@ -46,6 +47,9 @@ public class StudentBoard extends BaseEntity {
 
     @Column(name = "nickname")
     private String nickname;
+
+    @Enumerated(EnumType.STRING)
+    private BoardType boardType;  // 의뢰인지 고용인지 구분
 
     private String thumbnailImage;
 
